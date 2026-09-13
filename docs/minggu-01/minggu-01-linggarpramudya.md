@@ -69,53 +69,22 @@ Setelah instalasi selesai dan halaman selamat datang Laravel muncul, kerjakan **
    - `php artisan route:list`
 
      ```text
-     PS C:\Users\Linggar\Downloads\proweb\kampuslms-kelompok-05\test> php artisan route:list
-     GET|HEAD  / ................................................................................... routes/web.php:5
-     GET|HEAD  storage/{path} storage.local ΓÇ║ vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemServicePrΓÇª
-     PUT       storage/{path} storage.local.upload ΓÇ║ vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemServicePrΓÇª
-     GET|HEAD  up ....... vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php:219
+      PS C:\Users\Linggar\Downloads\proweb\kampuslms-kelompok-05\test> php artisan route:list
+      GET|HEAD  / ................................................................................... routes/web.php:5
+      GET|HEAD  storage/{path} storage.local › vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemServicePr…
+      PUT       storage/{path} storage.local.upload › vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemSe…
+      GET|HEAD  up ....... vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php:219
      ```
 
 
 
-### BREAK ΓÇö Rusak dengan sengaja (30 menit)
+### BREAK — Rusak dengan sengaja (30 menit)
 
 Lakukan satu per satu, catat pesan errornya, lalu kembalikan:
 
 | # | Yang dirusak | Prediksi Anda sebelum mencoba | Pesan error sebenarnya |
 |--|--------------|-------------------------------|------------------------|
-| 1 | Ganti nama `.env` menjadi `.env.bak` | Laravel akan error karena `.env` tidak ditemukan |Muncul This site canΓÇÖt be reached, dan refused to connect  |
+| 1 | Ganti nama `.env` menjadi `.env.bak` | Laravel akan error karena `.env` tidak ditemukan |Muncul This site can’t be reached, dan refused to connect  |
 | 2 | Kosongkan nilai `APP_KEY` di `.env` |Laravel masih berjalan, tetapi login akan error |Muncul `No application encryption key has been specified.`|
 | 3 | Ubah `DB_DATABASE` menjadi nama yang tidak ada |Sistem akan error saat membutuhkan database|Muncul `Database file at path [laravel] does not exist.` |
 | 4 | Ubah `APP_DEBUG=false`, lalu ulangi nomor 3 |Detail error akan disembunyikan | Muncul `500 Server Error` |
-
-Nomor 4 adalah yang terpenting. Perhatikan bedanya: dengan `APP_DEBUG=true` Anda melihat seluruh isi konfigurasi dan jejak kode; dengan `false` Anda hanya melihat halaman 500 kosong. **Di server produksi nanti, `APP_DEBUG=true` berarti membocorkan kredensial database Anda kepada siapa pun yang memicu error.** Ini akan diuji di minggu 12.
-
-### FIX ΓÇö Perbaiki proyek yang cacat (30 menit)
-
-Dosen menyediakan repo `kampuslms-broken`. Pindah ke branch `w01` ΓÇö isinya proyek Laravel 12 yang tidak mau jalan. Ada **4 masalah**. Temukan dan perbaiki semuanya, lalu kirim Pull Request berisi penjelasan tiap perbaikan.
-
-Petunjuk: masalahnya tersebar di berkas konfigurasi, dependensi, dan satu berkas yang seharusnya tidak ada di dalam repo.
-
-### BUILD ΓÇö Fondasi proyek kelompok (sisa waktu + tugas terstruktur)
-
-1. Buat repo kelompok di dalam Organization mata kuliah. Nama: `kampuslms-kelompok-XX`.
-2. Instal Laravel 12. Pastikan `php artisan serve` atau Herd berjalan.
-3. Buat `README.md` berisi: nama proyek, daftar anggota + NIM, cara instalasi, dan tabel pembagian peran.
-4. Pastikan `.env.example` lengkap dan `.env` **tidak** ter-commit. Verifikasi dengan `git status`.
-5. Setiap anggota membuat minimal satu commit atas nama dan email masing-masing.
-6. Aktifkan branch protection pada `main`.
-7. Buat satu route baru `/tentang` yang menampilkan view berisi nama kelompok dan anggotanya.
-
----
-
-## 1.4 Checkpoint Minggu 1
-
-Jawab tanpa membuka catatan. Kalau ada yang tidak bisa dijawab, ulangi bagian READ.
-
-- [ ] Sebutkan urutan berkas yang dilewati sebuah request dari browser sampai HTML kembali.
-- [ ] Kenapa hanya folder `public/` yang boleh diakses dari internet? Apa yang terjadi kalau seluruh folder proyek diekspos?
-- [ ] Apa beda `.env` dan `.env.example`, dan kenapa hanya satu yang di-commit?
-- [ ] Di Laravel 12, di berkas mana middleware didaftarkan? Kenapa jawabannya berbeda dari kebanyakan tutorial di internet?
-- [ ] Apa risiko konkret `APP_DEBUG=true` di server produksi?
-- [ ] Tunjukkan di `git log` bahwa Anda punya commit atas nama Anda sendiri.
