@@ -44,7 +44,7 @@
 
                 {{-- Menu navigasi menggunakan route() agar URL tidak ditulis manual. --}}
                 <nav class="space-y-2">
-
+    
                     <a
                         href="{{ route('dashboard') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
