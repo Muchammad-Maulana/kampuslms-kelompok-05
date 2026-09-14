@@ -14,7 +14,7 @@ class CourseController extends Controller
                 'name' => 'Pemrograman Web',
                 'sks' => 3,
                 'semester' => 5,
-                'dosen' => 'Aidil Saputra Kirsan, S.ST., M.Tr.Kom',
+                'dosen' => '<script>alert("XSS")</script>',
             ],
             [
                 'id' => 2,

@@ -102,8 +102,8 @@
 
                         <tr class="hover:bg-slate-50 transition">
 
-                            <td class="px-6 py-5">
-                                <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs">
+                            
+                        <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs">
                                     {{ $course['code'] }}
                                 </span>
                             </td>
