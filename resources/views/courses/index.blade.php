@@ -22,6 +22,11 @@
                 <span class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">
                     ● Semester Genap
                 </span>
+
+                <a href="{{ route('mata-kuliah.create') }}"
+                    class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">
+                    + Tambah Mata Kuliah
+                </a>
             </div>
 
         </div>
@@ -97,54 +102,72 @@
                 </thead>
 
                 <tbody class="divide-y divide-slate-100">
+                 @foreach ($courses as $course)
+                    <tr class="hover:bg-slate-50 transition">
 
-                    @foreach ($courses as $course)
+                        <td class="px-6 py-5">
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs">
+                                {{ $course->code }}
+                            </span>
+                        </td>
 
-                        <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-5">
+                            <p class="font-semibold text-slate-900">
+                                {{ $course->name }}
+                            </p>
+                        </td>
 
-                            
-                        <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs">
-                                    {{ $course['code'] }}
-                                </span>
-                            </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="font-semibold text-slate-700">
+                                {{ $course->sks }}
+                            </span>
+                        </td>
 
-                            <td class="px-6 py-5">
-                                <p class="font-semibold text-slate-900">
-                                    {{ $course['name'] }}
-                                </p>
+                        <td class="px-6 py-5">
+                            <p class="text-slate-700">
+                                {{ $course->lecturer->name }}
+                            </p>
+                        </td>
 
-                                <p class="text-xs text-slate-400 mt-1">
-                                    Semester {{ $course['semester'] }}
-                                </p>
-                            </td>
+                        <td class="px-6 py-5 text-center">
+                            <div class="flex items-center justify-center gap-2">
 
-                            <td class="px-6 py-5 text-center">
-                                <span class="font-semibold text-slate-700">
-                                    {{ $course['sks'] }}
-                                </span>
-                            </td>
-
-                            <td class="px-6 py-5">
-                                <p class="text-slate-700">
-                                    {{ $course['dosen'] }}
-                                </p>
-                            </td>
-
-                            <td class="px-6 py-5 text-center">
-
-                                {{-- Link detail menggunakan route() agar URL tidak ditulis manual. --}}
                                 <a
-                                    href="{{ route('mata-kuliah.show', $course['id']) }}"
+                                    href="{{ route('mata-kuliah.show', $course->id) }}"
                                     class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold text-xs hover:bg-blue-700 transition"
                                 >
                                     Lihat Detail
                                 </a>
 
-                            </td>
+                                <a
+                                    href="{{ route('mata-kuliah.edit', $course->id) }}"
+                                    class="inline-flex items-center px-4 py-2 rounded-lg bg-slate-500 text-slate-900 font-semibold text-xs hover:bg-slate-800 transition"                                >
+                                    Edit
+                                </a>
 
-                        </tr>
+                                <form
+                                    action="{{ route('mata-kuliah.destroy', $course->id) }}"
+                                    method="POST"
+                                    class="inline"
+                                    onsubmit="return confirm('Yakin ingin menghapus mata kuliah ini?')"
+                                >
+                                    @csrf
+                                    @method('DELETE')
 
-                    @endforeach
+                                    <button
+                                        type="submit"
+                                        class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-slate-900 font-semibold text-xs hover:bg-red-700 transition"
+                                    >
+                                        Hapus
+                                    </button>
+                                </form>
+                                
+                            </div>
+                        </td>
+
+                    </tr>
+                @endforeach
+                </tbody>
 
                 </tbody>
 
