@@ -143,10 +143,17 @@ class UserController extends Controller
     /**
      * Menghapus pengguna dari database.
      */
-    public function destroy(User $pengguna): RedirectResponse
+        public function destroy(User $pengguna): RedirectResponse
     {
         $name = $pengguna->name;
-        $pengguna->delete();
+
+        try {
+            $pengguna->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()
+                ->route('pengguna.index')
+                ->with('error', "Pengguna \"{$name}\" tidak bisa dihapus karena masih memiliki data terkait (misalnya tugas yang sudah dikumpulkan atau mata kuliah yang diampu). Hapus/pindahkan data tersebut terlebih dahulu.");
+        }
 
         return redirect()
             ->route('pengguna.index')
