@@ -26,7 +26,7 @@
             </div>
 
             
-                href="{{ route('pengguna.create') }}"
+             <a href="{{ route('pengguna.create') }}"
                 class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition"
             >
                 <span class="material-symbols-outlined text-base">add</span>
@@ -173,14 +173,14 @@
                                 <div class="flex items-center justify-center gap-2">
 
                                     
-                                        href="{{ route('pengguna.show', $user) }}"
+                                     <a href="{{ route('pengguna.show', $user) }}"
                                         class="inline-flex items-center px-3 py-2 rounded-lg bg-slate-100 text-slate-700 font-semibold text-xs hover:bg-slate-200 transition"
                                     >
                                         Detail
                                     </a>
 
                                     
-                                        href="{{ route('pengguna.edit', $user) }}"
+                                     <a href="{{ route('pengguna.edit', $user) }}"
                                         class="inline-flex items-center px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold text-xs hover:bg-blue-700 transition"
                                     >
                                         Ubah
