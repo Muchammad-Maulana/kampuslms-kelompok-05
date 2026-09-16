@@ -65,15 +65,6 @@
 
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
             <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold">
-                Semester
-            </p>
-            <p class="text-2xl font-bold text-slate-900 mt-3">
-                {{ $course['semester'] }}
-            </p>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-            <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold">
                 Status
             </p>
             <div class="mt-3">
@@ -99,12 +90,12 @@
 
         <div class="flex items-center gap-4 p-5 rounded-xl bg-blue-50 border border-blue-200">
             <div class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
-                {{ strtoupper(substr(explode(' ', $course['dosen'])[0], 0, 1)) }}
+                {{ strtoupper(substr($course->lecturer->name, 0, 1)) }}
             </div>
 
             <div>
                 <p class="font-semibold text-slate-900">
-                    {{ $course['dosen'] }}
+                    {{ $course->lecturer->name }}
                 </p>
                 <p class="text-sm text-slate-600 mt-1">
                     Pengampu Mata Kuliah
