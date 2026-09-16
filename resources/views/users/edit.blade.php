@@ -1,0 +1,1 @@
+<x-layout title="Edit Pengguna"><h1 class="text-3xl font-bold text-slate-900">Edit Pengguna</h1><p class="mt-2 text-sm text-slate-500">Perbarui data akun pengguna.</p>@include('users.form', ['user' => $user, 'formAction' => route('users.update', $user), 'formMethod' => 'PUT'])</x-layout>
