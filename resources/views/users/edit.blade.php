@@ -107,7 +107,7 @@
 
             <div class="flex justify-end gap-2 pt-2">
                 
-                    href="{{ route('pengguna.index') }}"
+                 <a href="{{ route('pengguna.index') }}"
                     class="inline-flex items-center px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 transition"
                 >
                     Batal
