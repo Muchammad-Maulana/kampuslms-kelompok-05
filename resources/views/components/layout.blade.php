@@ -59,6 +59,7 @@
                         Dashboard
                     </a>
 
+                    @if (auth()->user()?->role === 'admin')
                     <a
                         href="{{ route('mata-kuliah.index') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
@@ -72,6 +73,7 @@
 
                         Mata Kuliah
                     </a>
+                    @endif
 
                     <a
                         href="{{ route('tentang') }}"
@@ -87,7 +89,8 @@
                         Tentang
                     </a>
 
-                    <a
+                    @if (auth()->user()?->role === 'admin')
+                        <a
                         href="{{ route('users.index') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
                         {{ request()->routeIs('users.*')
@@ -100,6 +103,7 @@
 
                         Pengguna
                     </a>
+                    @endif
 
                 </nav>
 
@@ -137,20 +141,29 @@
                         >
                     </div>
 
+                    @auth
                     <div class="hidden md:flex items-center gap-3">
                         <div class="text-right">
                             <p class="text-sm font-semibold text-slate-800">
-                                Mahasiswa
+                                {{ auth()->user()->role === 'mahasiswa' ? 'Mahasiswa' : ucfirst(auth()->user()->role) }}
                             </p>
                             <p class="text-xs text-slate-400">
-                                Sistem Informasi
+                                {{ auth()->user()->email }}
                             </p>
                         </div>
 
                         <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
-                            M
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
+
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Keluar</button>
+                        </form>
                     </div>
+                    @else
+                        <a href="{{ route('login') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Masuk</a>
+                    @endauth
 
                 </div>
             </header>

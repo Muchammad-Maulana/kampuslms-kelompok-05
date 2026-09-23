@@ -71,7 +71,7 @@ User::create([
        'password',
    ]));
 
-   $user->role = 'student';
+   $user->role = 'mahasiswa';
    $user->save();
    ```
 

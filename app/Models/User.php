@@ -9,21 +9,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
+    // Hanya field aman yang boleh diisi melalui mass assignment.
+    // role sengaja tidak dimasukkan karena menentukan hak akses.
     protected $fillable = [
         'name',
         'email',
         'password',
+        'nim_nip',
     ];
 
     /**
@@ -31,6 +35,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    // Password dan token tidak boleh ikut tampil saat model diserialisasi.
     protected $hidden = [
         'password',
         'remember_token',
@@ -41,6 +46,7 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    // Mengubah waktu menjadi datetime dan memastikan password di-hash.
     protected function casts(): array
     {
         return [
@@ -49,18 +55,33 @@ class User extends Authenticatable
         ];
     }
 
+    // Satu dosen dapat mengampu banyak course melalui lecturer_id.
     public function taughtCourses(): HasMany
     {
         return $this->hasMany(Course::class, 'lecturer_id');
     }
 
-    public function enrolledCourses(): BelongsToMany
+    // User dan course berhubungan many-to-many melalui course_user.
+    public function courses(): BelongsToMany
     {
-        return $this->belongsToMany(Course::class)->withTimestamps();
+        return $this->belongsToMany(Course::class)
+            ->withPivot('enrolled_at')
+            ->withTimestamps();
     }
 
+    public function enrolledCourses(): BelongsToMany
+    {
+        return $this->courses();
+    }
+
+    // Satu mahasiswa dapat memiliki banyak submission.
     public function submissions(): HasMany
     {
         return $this->hasMany(Submission::class);
+    }
+
+    public function gradesGiven(): HasMany
+    {
+        return $this->hasMany(Grade::class, 'graded_by');
     }
 }

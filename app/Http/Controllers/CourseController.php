@@ -2,16 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCourseRequest;
+use App\Http\Requests\UpdateCourseRequest;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::with('lecturer')->latest()->get();
+        $query = Course::query()->with('lecturer');
+
+        if ($request->filled('q')) {
+            $keyword = trim($request->input('q'));
+
+            $query->where(function ($courseQuery) use ($keyword) {
+                $courseQuery->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('code', 'like', "%{$keyword}%")
+                    ->orWhere('description', 'like', "%{$keyword}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $courses = $query->latest()->paginate(10)->withQueryString();
 
         return view('courses.index', compact('courses'));
     }
@@ -23,19 +40,9 @@ class CourseController extends Controller
         return view('courses.create', compact('lecturers'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCourseRequest $request)
     {
-        $validated = $request->validate([
-            'code' => ['required', 'string', 'max:255', 'unique:courses,code'],
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'sks' => ['required', 'integer', 'between:1,6'],
-            'lecturer_id' => [
-                'required',
-                Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'dosen')),
-            ],
-            'status' => ['required', Rule::in(['draft', 'active', 'archived'])],
-        ]);
+        $validated = $request->validated();
 
         Course::create($validated);
 
@@ -56,19 +63,9 @@ class CourseController extends Controller
         return view('courses.edit', compact('course', 'lecturers'));
     }
 
-    public function update(Request $request, Course $course)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
-        $validated = $request->validate([
-            'code' => ['required', 'string', 'max:255', Rule::unique('courses', 'code')->ignore($course)],
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'sks' => ['required', 'integer', 'between:1,6'],
-            'lecturer_id' => [
-                'required',
-                Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'dosen')),
-            ],
-            'status' => ['required', Rule::in(['draft', 'active', 'archived'])],
-        ]);
+        $validated = $request->validated();
 
         $course->update($validated);
 

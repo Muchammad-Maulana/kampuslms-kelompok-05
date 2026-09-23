@@ -1,4 +1,14 @@
-    <x-layout title="Dashboard">
+    @php
+        $role = auth()->user()->role;
+        $roleLabel = $role === 'mahasiswa' ? 'Mahasiswa' : ucfirst($role);
+        $roleDescription = match ($role) {
+            'admin' => 'Kelola pengguna dan seluruh data akademik dalam satu portal.',
+            'dosen' => 'Kelola mata kuliah dan pantau aktivitas pembelajaran Anda.',
+            default => 'Jelajahi mata kuliah dan pantau aktivitas akademik Anda.',
+        };
+    @endphp
+
+    <x-layout title="Dashboard {{ $roleLabel }}">
 
         <div class="w-full px-6 lg:px-8 py-6">
 
@@ -44,7 +54,7 @@
                                 tracking-tight
                                 mt-4"
                         >
-                            Selamat Datang di EduKampus
+                            Selamat datang, {{ auth()->user()->name }}
                         </h1>
 
 
@@ -53,8 +63,7 @@
                                 mt-2
                                 max-w-2xl"
                         >
-                            Kelola informasi akademik dan eksplorasi mata kuliah
-                            pada semester aktif.
+                            {{ $roleDescription }}
                         </p>
 
                     </div>
@@ -86,7 +95,7 @@
                         </p>
 
                         <p class="text-2xl font-bold mt-1">
-                            9
+                            {{ \App\Models\Course::count() }}
                         </p>
 
                     </div>
@@ -111,7 +120,7 @@
                         </p>
 
                         <p class="text-2xl font-bold mt-1">
-                            5
+                            {{ $role === 'mahasiswa' ? '5' : ($role === 'dosen' ? auth()->user()->taughtCourses()->count() : 'Semua') }}
                         </p>
 
                     </div>
@@ -136,12 +145,22 @@
                         </p>
 
                         <p class="text-2xl font-bold mt-1">
-                            24
+                            {{ \App\Models\Course::sum('sks') }}
                         </p>
 
                     </div>
 
                 </div>
+
+                <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-blue-600">account_circle</span>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">Anda masuk sebagai {{ $roleLabel }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ auth()->user()->email }}</p>
+                        </div>
+                    </div>
+                </section>
 
             </div>
 
