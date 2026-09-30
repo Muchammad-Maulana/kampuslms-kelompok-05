@@ -59,16 +59,16 @@ Route::prefix('dosen')->name('dosen.')->middleware('role:dosen')->group(function
     Route::post('/mata-kuliah', [CourseController::class, 'store'])
         ->name('mata-kuliah.store');
 
-    Route::get('/mata-kuliah/{id}/edit', [CourseController::class, 'edit'])
+    Route::get('/mata-kuliah/{course}/edit', [CourseController::class, 'edit'])
         ->name('mata-kuliah.edit');
 
-    Route::put('/mata-kuliah/{id}', [CourseController::class, 'update'])
+    Route::put('/mata-kuliah/{course}', [CourseController::class, 'update'])
         ->name('mata-kuliah.update');
 
-    Route::delete('/mata-kuliah/{id}', [CourseController::class, 'destroy'])
+    Route::delete('/mata-kuliah/{course}', [CourseController::class, 'destroy'])
         ->name('mata-kuliah.destroy');
 
-    Route::get('/mata-kuliah/{id}', [CourseController::class, 'show'])
+    Route::get('/mata-kuliah/{course}', [CourseController::class, 'show'])
         ->name('mata-kuliah.show');
 });
 
@@ -76,7 +76,7 @@ Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->gr
     Route::get('/mata-kuliah', [CourseController::class, 'index'])
         ->name('mata-kuliah.index');
 
-    Route::get('/mata-kuliah/{id}', [CourseController::class, 'show'])
+    Route::get('/mata-kuliah/{course}', [CourseController::class, 'show'])
         ->name('mata-kuliah.show');
 });
 

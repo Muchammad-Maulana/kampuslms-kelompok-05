@@ -61,45 +61,35 @@ class CourseController extends Controller
         return response()->json($course, 201);
     }
 
-    public function show($mataKuliah)
+    public function show(Course $course)
     {
-        $course = Course::with('lecturer')->findOrFail($mataKuliah);
+        $course->load('lecturer');
 
         return view('courses.show', compact('course'));
     }
 
-    public function edit($mataKuliah)
+    public function edit(Course $course)
     {
-          $course = Course::with('lecturer')->findOrFail($mataKuliah);
+        $course->load('lecturer');
 
         $lecturers = \App\Models\User::where('role', 'dosen')->get();
 
         return view('courses.edit', compact('course', 'lecturers'));
     }
     
-    public function update(UpdateCourseRequest $request, $mataKuliah)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
         $validated = $request->validated();
-
-        $course = Course::findOrFail($mataKuliah);
 
         $course->update($validated);
 
         return redirect()
-            ->route('dosen.mata-kuliah.show', $mataKuliah)
+            ->route('dosen.mata-kuliah.show', $course)
             ->with('success', 'Mata kuliah berhasil diperbarui.');
     }
 
-    public function destroy($mataKuliah)
+    public function destroy(Course $course)
     {
-        $course = Course::find($mataKuliah);
-
-        if (!$course) {
-            return redirect()
-                ->route('dosen.mata-kuliah.index')
-                ->with('error', 'Mata kuliah tidak ditemukan atau sudah dihapus.');
-        }
-
         $course->delete();
 
         return redirect()
