@@ -157,6 +157,25 @@
 
             {{-- Isi halaman dari setiap Blade component ditampilkan melalui $slot. --}}
             <main class="p-6 lg:p-8">
+                @if (session('success'))
+                    <div class="mb-6 px-5 py-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                {{-- Key status dipertahankan untuk flash message lama pada modul Pengguna. --}}
+                @if (session('status'))
+                    <div class="mb-6 px-5 py-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="mb-6 px-5 py-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 {{ $slot }}
             </main>
 

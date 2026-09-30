@@ -13,10 +13,13 @@
                 <input
                     type="text"
                     name="code"
-                    value="{{ $course->code }}"
+                    value="{{ old('code', $course->code) }}"
                     class="w-full border rounded p-2"
                     required
                 >
+                @error('code')
+                    <span class="text-sm text-red-600">{{ $message }}</span>
+                @enderror
             </div>
 
             <div>
@@ -24,10 +27,13 @@
                 <input
                     type="text"
                     name="name"
-                    value="{{ $course->name }}"
+                    value="{{ old('name', $course->name) }}"
                     class="w-full border rounded p-2"
                     required
                 >
+                @error('name')
+                    <span class="text-sm text-red-600">{{ $message }}</span>
+                @enderror
             </div>
 
             <div>
@@ -35,7 +41,10 @@
                 <textarea
                     name="description"
                     class="w-full border rounded p-2"
-                >{{ $course->description }}</textarea>
+                >{{ old('description', $course->description) }}</textarea>
+                @error('description')
+                    <span class="text-sm text-red-600">{{ $message }}</span>
+                @enderror
             </div>
 
             <div>
@@ -43,11 +52,14 @@
                 <input
                     type="number"
                     name="sks"
-                    value="{{ $course->sks }}"
+                    value="{{ old('sks', $course->sks) }}"
                     class="w-full border rounded p-2"
                     min="1"
                     required
                 >
+                @error('sks')
+                    <span class="text-sm text-red-600">{{ $message }}</span>
+                @enderror
             </div>
 
             <div>
@@ -56,27 +68,33 @@
                     @foreach ($lecturers as $lecturer)
                         <option
                             value="{{ $lecturer->id }}"
-                            {{ $course->lecturer_id == $lecturer->id ? 'selected' : '' }}
+                            {{ old('lecturer_id', $course->lecturer_id) == $lecturer->id ? 'selected' : '' }}
                         >
                             {{ $lecturer->name }}
                         </option>
                     @endforeach
                 </select>
+                @error('lecturer_id')
+                    <span class="text-sm text-red-600">{{ $message }}</span>
+                @enderror
             </div>
 
             <div>
                 <label class="block mb-1 font-medium">Status</label>
                 <select name="status" class="w-full border rounded p-2" required>
-                    <option value="draft" {{ $course->status == 'draft' ? 'selected' : '' }}>
+                    <option value="draft" {{ old('status', $course->status) === 'draft' ? 'selected' : '' }}>
                         Draft
                     </option>
-                    <option value="active" {{ $course->status == 'active' ? 'selected' : '' }}>
+                    <option value="active" {{ old('status', $course->status) === 'active' ? 'selected' : '' }}>
                         Active
                     </option>
-                    <option value="archived" {{ $course->status == 'archived' ? 'selected' : '' }}>
+                    <option value="archived" {{ old('status', $course->status) === 'archived' ? 'selected' : '' }}>
                         Archived
                     </option>
                 </select>
+                @error('status')
+                    <span class="text-sm text-red-600">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="flex justify-end space-x-2">

@@ -5,30 +5,42 @@
         <h1 class="text-2xl font-bold mb-4">Tambah Mata Kuliah</h1>
 
         <form action="{{ route('mata-kuliah.store') }}" method="POST" class="space-y-4">
-    @csrf
+        @csrf
 
         <div>
             <label class="block mb-1 font-medium">Kode Mata Kuliah</label>
             <input type="text" name="code" class="w-full border rounded p-2"
-               placeholder="SI2514027" required>
+               value="{{ old('code') }}" placeholder="SI2514027" required>
+            @error('code')
+                <span class="text-sm text-red-600">{{ $message }}</span>
+            @enderror
         </div>
 
         <div>
             <label class="block mb-1 font-medium">Nama Mata Kuliah</label>
             <input type="text" name="name" class="w-full border rounded p-2"
-                placeholder="Pemrograman Web Lanjut" required>
+                value="{{ old('name') }}" placeholder="Pemrograman Web Lanjut" required>
+            @error('name')
+                <span class="text-sm text-red-600">{{ $message }}</span>
+            @enderror
         </div>
 
         <div>
             <label class="block mb-1 font-medium">Deskripsi</label>
             <textarea name="description" class="w-full border rounded p-2"
-                    placeholder="Deskripsi mata kuliah"></textarea>
+                    placeholder="Deskripsi mata kuliah">{{ old('description') }}</textarea>
+            @error('description')
+                <span class="text-sm text-red-600">{{ $message }}</span>
+            @enderror
         </div>
 
         <div>
             <label class="block mb-1 font-medium">SKS</label>
             <input type="number" name="sks" class="w-full border rounded p-2"
-                placeholder="3" min="1" required>
+                value="{{ old('sks') }}" placeholder="3" min="1" required>
+            @error('sks')
+                <span class="text-sm text-red-600">{{ $message }}</span>
+            @enderror
         </div>
 
         <div>
@@ -37,20 +49,26 @@
                 <option value="">-- Pilih Dosen --</option>
 
                 @foreach ($lecturers as $lecturer)
-                    <option value="{{ $lecturer->id }}">
+                    <option value="{{ $lecturer->id }}" {{ old('lecturer_id') == $lecturer->id ? 'selected' : '' }}>
                         {{ $lecturer->name }}
                     </option>
                 @endforeach
             </select>
+            @error('lecturer_id')
+                <span class="text-sm text-red-600">{{ $message }}</span>
+            @enderror
         </div>
 
         <div>
             <label class="block mb-1 font-medium">Status</label>
             <select name="status" class="w-full border rounded p-2" required>
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="archived">Archived</option>
+                <option value="draft" {{ old('status', 'draft') === 'draft' ? 'selected' : '' }}>Draft</option>
+                <option value="active" {{ old('status') === 'active' ? 'selected' : '' }}>Active</option>
+                <option value="archived" {{ old('status') === 'archived' ? 'selected' : '' }}>Archived</option>
             </select>
+            @error('status')
+                <span class="text-sm text-red-600">{{ $message }}</span>
+            @enderror
         </div>
 
         <div class="flex justify-end space-x-2">

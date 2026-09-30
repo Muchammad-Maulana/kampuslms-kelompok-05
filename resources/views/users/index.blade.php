@@ -1,18 +1,5 @@
 <x-layout title="Pengguna">
 
-    {{-- Notifikasi status hasil aksi (tambah/edit/hapus). --}}
-    @if (session('status'))
-        <div class="mb-6 px-5 py-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold">
-            {{ session('status') }}
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-6 px-5 py-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold">
-            {{ session('error') }}
-        </div>
-    @endif
-
     {{-- Header halaman memberikan informasi utama tentang daftar pengguna. --}}
     <div class="mb-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
