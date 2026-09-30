@@ -55,7 +55,7 @@
     </div>
 
     <div class="flex gap-3">
-        <a href="{{ route('mata-kuliah.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Batal</a>
+        <a href="{{ route('admin.mata-kuliah.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Batal</a>
         <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Simpan</button>
     </div>
 </form>

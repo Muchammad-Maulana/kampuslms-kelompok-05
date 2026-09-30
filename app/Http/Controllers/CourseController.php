@@ -12,7 +12,14 @@ class CourseController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Course::query()->with('lecturer');
+        $user = $request->user();
+        $query = match ($user->role) {
+            'admin' => Course::query(),
+            'dosen' => $user->taughtCourses(),
+            'mahasiswa' => $user->courses(),
+            default => abort(403),
+        };
+        $query->with('lecturer');
 
         if ($request->filled('q')) {
             $keyword = trim($request->input('q'));
@@ -28,9 +35,16 @@ class CourseController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $courses = $query->latest()->paginate(10)->withQueryString();
+        $totalSks = (clone $query)->sum('courses.sks');
+        $courses = $query->latest('courses.created_at')->paginate(10)->withQueryString();
+        $routePrefix = match ($user->role) {
+            'admin' => 'admin.mata-kuliah',
+            'dosen' => 'dosen.mata-kuliah',
+            'mahasiswa' => 'mahasiswa.mata-kuliah',
+        };
+        $canManage = $user->role === 'admin';
 
-        return view('courses.index', compact('courses'));
+        return view('courses.index', compact('courses', 'routePrefix', 'canManage', 'totalSks'));
     }
 
     public function create()
@@ -46,14 +60,35 @@ class CourseController extends Controller
 
         Course::create($validated);
 
-        return redirect()->route('mata-kuliah.index')->with('success', 'Mata kuliah berhasil ditambahkan.');
+        return redirect()->route('admin.mata-kuliah.index')->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
 
-    public function show(Course $course)
+    public function show(Request $request, Course $course)
     {
-        $course->load('lecturer', 'assignments');
+        $user = $request->user();
+        $canView = match ($user->role) {
+            'admin' => true,
+            'dosen' => $course->lecturer_id === $user->id,
+            'mahasiswa' => $user->courses()->whereKey($course->getKey())->exists(),
+            default => false,
+        };
 
-        return view('courses.show', compact('course'));
+        abort_unless($canView, 403);
+
+        $course->load('lecturer');
+        $course->load(['assignments' => function ($query) use ($user): void {
+            if ($user->role === 'mahasiswa') {
+                $query->where('status', 'published');
+            }
+        }]);
+        $routePrefix = match ($user->role) {
+            'admin' => 'admin.mata-kuliah',
+            'dosen' => 'dosen.mata-kuliah',
+            'mahasiswa' => 'mahasiswa.mata-kuliah',
+        };
+        $canManage = $user->role === 'admin';
+
+        return view('courses.show', compact('course', 'routePrefix', 'canManage'));
     }
 
     public function edit(Course $course)
@@ -69,13 +104,13 @@ class CourseController extends Controller
 
         $course->update($validated);
 
-        return redirect()->route('mata-kuliah.show', $course)->with('success', 'Mata kuliah berhasil diperbarui.');
+        return redirect()->route('admin.mata-kuliah.show', $course)->with('success', 'Mata kuliah berhasil diperbarui.');
     }
 
     public function destroy(Course $course)
     {
         $course->delete();
 
-        return redirect()->route('mata-kuliah.index')->with('success', 'Mata kuliah berhasil dihapus.');
+        return redirect()->route('admin.mata-kuliah.index')->with('success', 'Mata kuliah berhasil dihapus.');
     }
 }

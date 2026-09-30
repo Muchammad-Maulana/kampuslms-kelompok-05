@@ -61,9 +61,9 @@
 
                     @if (auth()->user()?->role === 'admin')
                     <a
-                        href="{{ route('mata-kuliah.index') }}"
+                        href="{{ route('admin.mata-kuliah.index') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
-                        {{ request()->routeIs('mata-kuliah.*')
+                        {{ request()->routeIs('admin.mata-kuliah.*')
                             ? 'bg-blue-600 text-white font-semibold shadow-lg'
                             : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
                     >
@@ -91,9 +91,9 @@
 
                     @if (auth()->user()?->role === 'admin')
                         <a
-                        href="{{ route('users.index') }}"
+                        href="{{ route('admin.users.index') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
-                        {{ request()->routeIs('users.*')
+                        {{ request()->routeIs('admin.users.*')
                             ? 'bg-blue-600 text-white font-semibold shadow-lg'
                             : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
                     >

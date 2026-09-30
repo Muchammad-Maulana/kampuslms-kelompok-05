@@ -32,7 +32,7 @@ class UserController extends Controller
         $user->role = $role;
         $user->save();
 
-        return redirect()->route('users.index')->with('success', 'Pengguna berhasil ditambahkan.');
+        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
     public function show(User $user)
@@ -61,17 +61,17 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('users.show', $user)->with('success', 'Pengguna berhasil diperbarui.');
+        return redirect()->route('admin.users.show', $user)->with('success', 'Pengguna berhasil diperbarui.');
     }
 
     public function destroy(User $user)
     {
         if ($user->taughtCourses()->exists() || $user->submissions()->exists()) {
-            return redirect()->route('users.index')->with('error', 'Pengguna tidak dapat dihapus karena masih memiliki data terkait.');
+            return redirect()->route('admin.users.index')->with('error', 'Pengguna tidak dapat dihapus karena masih memiliki data terkait.');
         }
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'Pengguna berhasil dihapus.');
+        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus.');
     }
 }

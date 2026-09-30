@@ -38,7 +38,7 @@ class WeekFourFeatureTest extends TestCase
             'status' => 'draft',
         ]);
 
-        $response = $this->actingAs($admin)->get('/mata-kuliah?q=Basis&status=active');
+        $response = $this->actingAs($admin)->get('/admin/mata-kuliah?q=Basis&status=active');
 
         $response->assertOk();
         $response->assertSee('Sistem Basis Data');
@@ -91,7 +91,7 @@ class WeekFourFeatureTest extends TestCase
     {
         $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
 
-        $response = $this->actingAs($mahasiswa)->get('/users');
+        $response = $this->actingAs($mahasiswa)->get('/admin/users');
 
         $response->assertForbidden();
     }
