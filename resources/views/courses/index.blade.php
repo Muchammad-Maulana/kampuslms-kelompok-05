@@ -182,7 +182,7 @@
                                     class="inline"
                                     onsubmit="return confirm('Yakin ingin menghapus mata kuliah ini?')"
                                 >
-                            
+                                    @csrf
                                     @method('DELETE')
 
                                     <button
