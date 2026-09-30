@@ -92,7 +92,13 @@ class CourseController extends Controller
 
     public function destroy($mataKuliah)
     {
-        $course = Course::findOrFail($mataKuliah);
+        $course = Course::find($mataKuliah);
+
+        if (!$course) {
+            return redirect()
+                ->route('mata-kuliah.index')
+                ->with('error', 'Mata kuliah tidak ditemukan atau sudah dihapus.');
+        }
 
         $course->delete();
 
