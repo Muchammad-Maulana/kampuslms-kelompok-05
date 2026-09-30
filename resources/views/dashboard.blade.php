@@ -95,7 +95,7 @@
                         </p>
 
                         <p class="text-2xl font-bold mt-1">
-                            {{ \App\Models\Course::count() }}
+                            {{ $courseCount }}
                         </p>
 
                     </div>
@@ -116,11 +116,11 @@
                         </span>
 
                         <p class="text-sm text-[#464554] mt-3">
-                            Semester
+                            Total SKS
                         </p>
 
                         <p class="text-2xl font-bold mt-1">
-                            {{ $role === 'mahasiswa' ? '5' : ($role === 'dosen' ? auth()->user()->taughtCourses()->count() : 'Semua') }}
+                            {{ $totalSks }}
                         </p>
 
                     </div>
@@ -141,16 +141,39 @@
                         </span>
 
                         <p class="text-sm text-[#464554] mt-3">
-                            Total SKS
+                            Status akses
                         </p>
 
                         <p class="text-2xl font-bold mt-1">
-                            {{ \App\Models\Course::sum('sks') }}
+                            {{ $roleLabel }}
                         </p>
 
                     </div>
 
                 </div>
+
+                <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Mata Kuliah Terbaru</h2>
+                            <p class="mt-1 text-sm text-slate-500">Course yang tersedia sesuai akses akun Anda.</p>
+                        </div>
+                        <a href="{{ route($courseIndexRoute) }}" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">Buka daftar mata kuliah</a>
+                    </div>
+                    <div class="divide-y divide-slate-200">
+                        @forelse ($recentCourses as $course)
+                            <a href="{{ route($role . '.mata-kuliah.show', $course) }}" class="flex flex-wrap items-center justify-between gap-3 py-3 hover:bg-slate-50">
+                                <div>
+                                    <p class="font-semibold text-slate-900">{{ $course->name }}</p>
+                                    <p class="mt-1 text-sm text-slate-500">{{ $course->code }} · {{ $course->lecturer?->name ?? 'Belum ditentukan' }}</p>
+                                </div>
+                                <span class="text-sm font-semibold text-blue-700">Lihat detail</span>
+                            </a>
+                        @empty
+                            <p class="py-6 text-sm text-slate-500">Belum ada mata kuliah yang tersedia untuk akun ini.</p>
+                        @endforelse
+                    </div>
+                </section>
 
                 <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div class="flex items-center gap-3">

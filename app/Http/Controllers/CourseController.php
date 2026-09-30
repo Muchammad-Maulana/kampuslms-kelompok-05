@@ -75,7 +75,7 @@ class CourseController extends Controller
 
         abort_unless($canView, 403);
 
-        $course->load('lecturer');
+        $course->load('lecturer', 'materials');
         $course->load(['assignments' => function ($query) use ($user): void {
             if ($user->role === 'mahasiswa') {
                 $query->where('status', 'published');

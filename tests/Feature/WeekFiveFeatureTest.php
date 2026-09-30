@@ -212,4 +212,47 @@ class WeekFiveFeatureTest extends TestCase
         $response->assertOk();
         $response->assertSee('Materi Minggu Lima');
     }
+
+    public function test_lecturer_dashboard_only_shows_their_courses_and_role_navigation(): void
+    {
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $otherLecturer = User::factory()->create(['role' => 'dosen']);
+        $ownCourse = Course::factory()->create([
+            'name' => 'Dashboard Course Saya',
+            'lecturer_id' => $lecturer->id,
+        ]);
+        Course::factory()->create([
+            'name' => 'Dashboard Course Lain',
+            'lecturer_id' => $otherLecturer->id,
+        ]);
+
+        $response = $this->actingAs($lecturer)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee($ownCourse->name);
+        $response->assertDontSee('Dashboard Course Lain');
+        $response->assertSee(route('dosen.mata-kuliah.index'));
+    }
+
+    public function test_student_dashboard_only_shows_enrolled_courses(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $enrolledCourse = Course::factory()->create([
+            'name' => 'Dashboard Course Terdaftar',
+            'lecturer_id' => $lecturer->id,
+        ]);
+        $otherCourse = Course::factory()->create([
+            'name' => 'Dashboard Course Tidak Terdaftar',
+            'lecturer_id' => $lecturer->id,
+        ]);
+        $enrolledCourse->students()->attach($student);
+
+        $response = $this->actingAs($student)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee($enrolledCourse->name);
+        $response->assertDontSee($otherCourse->name);
+        $response->assertSee(route('mahasiswa.mata-kuliah.index'));
+    }
 }

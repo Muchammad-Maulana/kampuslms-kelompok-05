@@ -75,6 +75,25 @@
                     </a>
                     @endif
 
+                    @if (in_array(auth()->user()?->role, ['dosen', 'mahasiswa'], true))
+                        @php
+                            $courseRoute = auth()->user()->role === 'dosen'
+                                ? 'dosen.mata-kuliah.index'
+                                : 'mahasiswa.mata-kuliah.index';
+                            $courseRoutePattern = auth()->user()->role . '.mata-kuliah.*';
+                        @endphp
+                        <a
+                            href="{{ route($courseRoute) }}"
+                            class="flex items-center gap-3 rounded-xl px-4 py-3
+                            {{ request()->routeIs($courseRoutePattern)
+                                ? 'bg-blue-600 text-white font-semibold shadow-lg'
+                                : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
+                        >
+                            <span class="material-symbols-outlined">menu_book</span>
+                            Mata Kuliah
+                        </a>
+                    @endif
+
                     <a
                         href="{{ route('tentang') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
@@ -167,6 +186,19 @@
 
                 </div>
             </header>
+
+            @auth
+                <nav class="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 lg:hidden" aria-label="Navigasi utama">
+                    <a href="{{ route('dashboard') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('dashboard') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Dashboard</a>
+                    @if (auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.mata-kuliah.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('admin.mata-kuliah.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Mata Kuliah</a>
+                        <a href="{{ route('admin.users.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('admin.users.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Pengguna</a>
+                    @else
+                        <a href="{{ route(auth()->user()->role . '.mata-kuliah.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs(auth()->user()->role . '.mata-kuliah.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Mata Kuliah</a>
+                    @endif
+                    <a href="{{ route('tentang') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('tentang') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Tentang</a>
+                </nav>
+            @endauth
 
 
             {{-- Isi halaman dari setiap Blade component ditampilkan melalui $slot. --}}
