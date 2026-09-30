@@ -1,5 +1,11 @@
 <x-layout title="Detail Mata Kuliah">
 
+    @php
+        $courseIndexRoute = request()->routeIs('mahasiswa.*')
+            ? 'mahasiswa.mata-kuliah.index'
+            : 'dosen.mata-kuliah.index';
+    @endphp
+
     {{-- Breadcrumb untuk navigasi --}}
     <div class="mb-6">
         <div class="flex items-center gap-2 text-sm">
@@ -7,7 +13,7 @@
                 Dashboard
             </a>
             <span class="text-slate-400">/</span>
-            <a href="{{ route('mata-kuliah.index') }}" class="text-blue-600 hover:underline">
+            <a href="{{ route($courseIndexRoute) }}" class="text-blue-600 hover:underline">
                 Mata Kuliah
             </a>
             <span class="text-slate-400">/</span>
@@ -33,7 +39,7 @@
             </div>
 
             <a 
-                href="{{ route('mata-kuliah.index') }}"
+                href="{{ route($courseIndexRoute) }}"
                 class="inline-flex items-center px-6 py-3 rounded-xl bg-slate-200 text-slate-700 font-semibold hover:bg-slate-300 transition"
             >
                 <span class="material-symbols-outlined mr-2">arrow_back</span>

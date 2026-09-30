@@ -48,7 +48,7 @@ class CourseController extends Controller
         Course::create($validated);
 
         return redirect()
-            ->route('mata-kuliah.index')
+            ->route('dosen.mata-kuliah.index')
             ->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
 
@@ -86,7 +86,7 @@ class CourseController extends Controller
         $course->update($validated);
 
         return redirect()
-            ->route('mata-kuliah.show', $mataKuliah)
+            ->route('dosen.mata-kuliah.show', $mataKuliah)
             ->with('success', 'Mata kuliah berhasil diperbarui.');
     }
 
@@ -96,14 +96,14 @@ class CourseController extends Controller
 
         if (!$course) {
             return redirect()
-                ->route('mata-kuliah.index')
+                ->route('dosen.mata-kuliah.index')
                 ->with('error', 'Mata kuliah tidak ditemukan atau sudah dihapus.');
         }
 
         $course->delete();
 
         return redirect()
-            ->route('mata-kuliah.index')
+            ->route('dosen.mata-kuliah.index')
             ->with('success', 'Mata kuliah berhasil dihapus.');
     }
 }

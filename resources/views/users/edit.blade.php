@@ -7,7 +7,7 @@
                 Dashboard
             </a>
             <span class="text-slate-400">/</span>
-            <a href="{{ route('pengguna.index') }}" class="text-blue-600 hover:underline">
+            <a href="{{ route('admin.pengguna.index') }}" class="text-blue-600 hover:underline">
                 Pengguna
             </a>
             <span class="text-slate-400">/</span>
@@ -43,7 +43,7 @@
             </div>
         @endif
 
-        <form action="{{ route('pengguna.update', $user) }}" method="POST" class="space-y-5">
+        <form action="{{ route('admin.pengguna.update', $user) }}" method="POST" class="space-y-5">
             @csrf
             @method('PUT')
 
@@ -107,7 +107,7 @@
 
             <div class="flex justify-end gap-2 pt-2">
                 
-                 <a href="{{ route('pengguna.index') }}"
+                 <a href="{{ route('admin.pengguna.index') }}"
                     class="inline-flex items-center px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 transition"
                 >
                     Batal
