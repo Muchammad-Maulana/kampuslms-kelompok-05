@@ -59,10 +59,11 @@
                         Dashboard
                     </a>
 
+                    @if (auth()->user()?->role === 'admin')
                     <a
-                        href="{{ route('mata-kuliah.index') }}"
+                        href="{{ route('admin.mata-kuliah.index') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
-                        {{ request()->routeIs('mata-kuliah.*')
+                        {{ request()->routeIs('admin.mata-kuliah.*')
                             ? 'bg-blue-600 text-white font-semibold shadow-lg'
                             : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
                     >
@@ -72,19 +73,26 @@
 
                         Mata Kuliah
                     </a>
-                    <a
-                        href="{{ route('pengguna.index') }}"
-                        class="flex items-center gap-3 rounded-xl px-4 py-3
-                        {{ request()->routeIs('pengguna.*')
-                            ? 'bg-blue-600 text-white font-semibold shadow-lg'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
-                    >
-                        <span class="material-symbols-outlined">
-                            group
-                        </span>
+                    @endif
 
-                        Pengguna
-                    </a>
+                    @if (in_array(auth()->user()?->role, ['dosen', 'mahasiswa'], true))
+                        @php
+                            $courseRoute = auth()->user()->role === 'dosen'
+                                ? 'dosen.mata-kuliah.index'
+                                : 'mahasiswa.mata-kuliah.index';
+                            $courseRoutePattern = auth()->user()->role . '.mata-kuliah.*';
+                        @endphp
+                        <a
+                            href="{{ route($courseRoute) }}"
+                            class="flex items-center gap-3 rounded-xl px-4 py-3
+                            {{ request()->routeIs($courseRoutePattern)
+                                ? 'bg-blue-600 text-white font-semibold shadow-lg'
+                                : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
+                        >
+                            <span class="material-symbols-outlined">menu_book</span>
+                            Mata Kuliah
+                        </a>
+                    @endif
 
                     <a
                         href="{{ route('tentang') }}"
@@ -99,6 +107,22 @@
 
                         Tentang
                     </a>
+
+                    @if (auth()->user()?->role === 'admin')
+                        <a
+                        href="{{ route('admin.users.index') }}"
+                        class="flex items-center gap-3 rounded-xl px-4 py-3
+                        {{ request()->routeIs('admin.users.*')
+                            ? 'bg-blue-600 text-white font-semibold shadow-lg'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
+                    >
+                        <span class="material-symbols-outlined">
+                            group
+                        </span>
+
+                        Pengguna
+                    </a>
+                    @endif
 
                 </nav>
 
@@ -136,23 +160,45 @@
                         >
                     </div>
 
+                    @auth
                     <div class="hidden md:flex items-center gap-3">
                         <div class="text-right">
                             <p class="text-sm font-semibold text-slate-800">
-                                Mahasiswa
+                                {{ auth()->user()->role === 'mahasiswa' ? 'Mahasiswa' : ucfirst(auth()->user()->role) }}
                             </p>
                             <p class="text-xs text-slate-400">
-                                Sistem Informasi
+                                {{ auth()->user()->email }}
                             </p>
                         </div>
 
                         <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
-                            M
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
+
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Keluar</button>
+                        </form>
                     </div>
+                    @else
+                        <a href="{{ route('login') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Masuk</a>
+                    @endauth
 
                 </div>
             </header>
+
+            @auth
+                <nav class="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 lg:hidden" aria-label="Navigasi utama">
+                    <a href="{{ route('dashboard') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('dashboard') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Dashboard</a>
+                    @if (auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.mata-kuliah.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('admin.mata-kuliah.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Mata Kuliah</a>
+                        <a href="{{ route('admin.users.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('admin.users.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Pengguna</a>
+                    @else
+                        <a href="{{ route(auth()->user()->role . '.mata-kuliah.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs(auth()->user()->role . '.mata-kuliah.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Mata Kuliah</a>
+                    @endif
+                    <a href="{{ route('tentang') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('tentang') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Tentang</a>
+                </nav>
+            @endauth
 
 
             {{-- Isi halaman dari setiap Blade component ditampilkan melalui $slot. --}}

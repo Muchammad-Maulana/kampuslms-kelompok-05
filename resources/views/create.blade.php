@@ -2,7 +2,7 @@
     <div class="bg-white p-6 rounded shadow max-w-lg mx-auto">
         <h1 class="text-2xl font-bold mb-4">Tambah Mata Kuliah</h1>
 
-        <form action="{{ route('mata-kuliah.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.mata-kuliah.store') }}" method="POST" class="space-y-4">
             @csrf
 
             <div>
@@ -31,7 +31,7 @@
             </div>
 
             <div class="flex justify-end space-x-2">
-                <a href="{{ route('mata-kuliah.index') }}" class="px-4 py-2 border rounded">Batal</a>
+                <a href="{{ route('admin.mata-kuliah.index') }}" class="px-4 py-2 border rounded">Batal</a>
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>
             </div>
         </form>

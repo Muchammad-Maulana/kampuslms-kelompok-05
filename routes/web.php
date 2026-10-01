@@ -1,66 +1,80 @@
-<?php 
+<?php
+
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CourseController;
-use App\Http\Controllers\UserController; 
-use Illuminate\Support\Facades\Route; 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () { 
-    return view('welcome'); 
-})->name('home'); 
+Route::get('/', fn () => view('welcome'))->name('home');
+Route::get('/dashboard', DashboardController::class)->middleware('auth')->name('dashboard');
+Route::get('/tentang', fn () => view('tentang'))->name('tentang');
 
-Route::get('/dashboard', function () { 
-    return view('dashboard'); 
-})->name('dashboard'); 
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('/tentang', function () { 
-    return view('tentang'); 
-})->name('tentang'); 
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('mata-kuliah', CourseController::class)
+        ->parameters(['mata-kuliah' => 'course'])
+        ->names('mata-kuliah');
 
-Route::get('/mata-kuliah', [CourseController::class, 'index']) 
-    ->name('mata-kuliah.index'); 
+    Route::resource('users', UserController::class)->names('users');
 
-Route::get('/mata-kuliah/create', [CourseController::class, 'create'])
-    ->name('mata-kuliah.create');
+    Route::scopeBindings()->group(function () {
+        Route::get('mata-kuliah/{course}/materials/{material}', [App\Http\Controllers\MaterialController::class, 'showScoped'])
+            ->name('mata-kuliah.materials.scoped-show');
+        Route::get('mata-kuliah/{course}/assignments/{assignment}', [App\Http\Controllers\AssignmentController::class, 'showScoped'])
+            ->name('mata-kuliah.assignments.scoped-show');
+        Route::resource('mata-kuliah.materials', App\Http\Controllers\MaterialController::class)
+            ->only(['index', 'show'])
+            ->parameters(['mata-kuliah' => 'course', 'materials' => 'material'])
+            ->shallow();
+        Route::resource('mata-kuliah.assignments', App\Http\Controllers\AssignmentController::class)
+            ->only(['index', 'show'])
+            ->parameters(['mata-kuliah' => 'course', 'assignments' => 'assignment'])
+            ->shallow();
+    });
+});
 
-Route::post('/mata-kuliah', [CourseController::class, 'store'])
-    ->name('mata-kuliah.store');
+Route::middleware(['auth', 'role:dosen'])->prefix('dosen')->name('dosen.')->group(function () {
+    Route::get('mata-kuliah', [CourseController::class, 'index'])->name('mata-kuliah.index');
+    Route::get('mata-kuliah/{course}', [CourseController::class, 'show'])->name('mata-kuliah.show');
 
-Route::get('/mata-kuliah/{id}/edit', [CourseController::class, 'edit'])
-    ->name('mata-kuliah.edit');
+    Route::scopeBindings()->group(function () {
+        Route::get('mata-kuliah/{course}/materials/{material}', [App\Http\Controllers\MaterialController::class, 'showScoped'])
+            ->name('mata-kuliah.materials.scoped-show');
+        Route::get('mata-kuliah/{course}/assignments/{assignment}', [App\Http\Controllers\AssignmentController::class, 'showScoped'])
+            ->name('mata-kuliah.assignments.scoped-show');
+        Route::resource('mata-kuliah.materials', App\Http\Controllers\MaterialController::class)
+            ->only(['index', 'show'])
+            ->parameters(['mata-kuliah' => 'course', 'materials' => 'material'])
+            ->shallow();
+        Route::resource('mata-kuliah.assignments', App\Http\Controllers\AssignmentController::class)
+            ->only(['index', 'show'])
+            ->parameters(['mata-kuliah' => 'course', 'assignments' => 'assignment'])
+            ->shallow();
+    });
+});
 
-Route::put('/mata-kuliah/{id}', [CourseController::class, 'update'])
-    ->name('mata-kuliah.update');
+Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+    Route::get('mata-kuliah', [CourseController::class, 'index'])->name('mata-kuliah.index');
+    Route::get('mata-kuliah/{course}', [CourseController::class, 'show'])->name('mata-kuliah.show');
 
-Route::delete('/mata-kuliah/{id}', [CourseController::class, 'destroy'])
-    ->name('mata-kuliah.destroy');
-    
-// Route untuk menampilkan detail satu mata kuliah. 
-Route::get('/mata-kuliah/{id}', [CourseController::class, 'show']) 
-    ->name('mata-kuliah.show'); 
+    Route::scopeBindings()->group(function () {
+        Route::get('mata-kuliah/{course}/materials/{material}', [App\Http\Controllers\MaterialController::class, 'showScoped'])
+            ->name('mata-kuliah.materials.scoped-show');
+        Route::get('mata-kuliah/{course}/assignments/{assignment}', [App\Http\Controllers\AssignmentController::class, 'showScoped'])
+            ->name('mata-kuliah.assignments.scoped-show');
+        Route::resource('mata-kuliah.materials', App\Http\Controllers\MaterialController::class)
+            ->only(['index', 'show'])
+            ->parameters(['mata-kuliah' => 'course', 'materials' => 'material'])
+            ->shallow();
+        Route::resource('mata-kuliah.assignments', App\Http\Controllers\AssignmentController::class)
+            ->only(['index', 'show'])
+            ->parameters(['mata-kuliah' => 'course', 'assignments' => 'assignment'])
+            ->shallow();
+    });
+});
 
-// Route CRUD untuk manajemen Pengguna.
-Route::get('/pengguna', [UserController::class, 'index'])
-    ->name('pengguna.index');
-
-Route::get('/pengguna/tambah', [UserController::class, 'create'])
-    ->name('pengguna.create');
-
-Route::post('/pengguna', [UserController::class, 'store'])
-    ->name('pengguna.store');
-
-Route::get('/pengguna/{pengguna}', [UserController::class, 'show'])
-    ->name('pengguna.show');
-
-Route::get('/pengguna/{pengguna}/edit', [UserController::class, 'edit'])
-    ->name('pengguna.edit');
-
-Route::put('/pengguna/{pengguna}', [UserController::class, 'update'])
-    ->name('pengguna.update');
-
-Route::delete('/pengguna/{pengguna}', [UserController::class, 'destroy'])
-    ->name('pengguna.destroy');
-
-Route::get('/error', function () { 
-    abort(404); 
-})->name('error');
-
-
+Route::get('/error', fn () => abort(404))->name('error');

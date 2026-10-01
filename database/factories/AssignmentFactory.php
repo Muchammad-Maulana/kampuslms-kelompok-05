@@ -27,9 +27,35 @@ class AssignmentFactory extends Factory
                 'Dokumentasi Proyek',
                 'Presentasi Hasil Pengembangan',
             ]),
-            'description' => fake()->paragraph(2),
+            'instructions' => fake()->paragraph(2),
+            'created_by' => Course::query()->with('lecturer')->inRandomOrder()->firstOrFail()->lecturer_id,
             'due_at' => fake()->dateTimeBetween('+1 week', '+1 month'),
             'max_score' => fake()->numberBetween(50, 100),
+            'status' => 'published',
         ];
+    }
+
+    public function overdue(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'due_at' => fake()->dateTimeBetween('-1 month', '-1 day'),
+            'status' => 'published',
+        ]);
+    }
+
+    public function active(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'due_at' => fake()->dateTimeBetween('+1 day', '+1 month'),
+            'status' => 'published',
+        ]);
+    }
+
+    public function draft(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'due_at' => fake()->dateTimeBetween('+1 week', '+1 month'),
+            'status' => 'draft',
+        ]);
     }
 }

@@ -17,7 +17,7 @@
 
             <div class="mt-8">
                 <a
-                    href="{{ route('mata-kuliah.index') }}"
+                    href="{{ route('home') }}"
                     class="inline-flex items-center rounded-xl bg-indigo-600 px-6 py-3
                            font-semibold text-white transition hover:bg-indigo-700"
                 >
