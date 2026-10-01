@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CourseController extends Controller
 {
@@ -70,6 +71,8 @@ class CourseController extends Controller
 
     public function edit(Course $course)
     {
+        Gate::authorize('manage', $course);
+
         $course->load('lecturer');
 
         $lecturers = \App\Models\User::where('role', 'dosen')->get();
@@ -79,6 +82,8 @@ class CourseController extends Controller
     
     public function update(UpdateCourseRequest $request, Course $course)
     {
+        Gate::authorize('manage', $course);
+
         $validated = $request->validated();
 
         $course->update($validated);
@@ -90,6 +95,8 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
+        Gate::authorize('manage', $course);
+
         $course->delete();
 
         return redirect()
