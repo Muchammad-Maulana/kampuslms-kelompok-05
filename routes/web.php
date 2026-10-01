@@ -1,6 +1,8 @@
 <?php 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\UserController; 
 use Illuminate\Support\Facades\Route; 
 
@@ -78,6 +80,24 @@ Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->gr
 
     Route::get('/mata-kuliah/{course}', [CourseController::class, 'show'])
         ->name('mata-kuliah.show');
+});
+
+// Resource materi dan tugas bersarang karena keduanya dimiliki oleh satu mata kuliah.
+Route::scopeBindings()->group(function () {
+    Route::resource('mata-kuliah.materi', MaterialController::class)
+        ->parameters(['mata-kuliah' => 'course', 'materi' => 'material'])
+        ->shallow();
+
+    Route::resource('mata-kuliah.tugas', AssignmentController::class)
+        ->parameters(['mata-kuliah' => 'course', 'tugas' => 'assignment'])
+        ->shallow();
+
+    // URL nested ini mempertahankan konteks course agar binding child dapat di-scope.
+    Route::get('mata-kuliah/{course}/materi/{material}', [MaterialController::class, 'showInCourse'])
+        ->name('mata-kuliah.materi.in-course');
+
+    Route::get('mata-kuliah/{course}/tugas/{assignment}', [AssignmentController::class, 'showInCourse'])
+        ->name('mata-kuliah.tugas.in-course');
 });
 
 Route::get('/error', function () { 

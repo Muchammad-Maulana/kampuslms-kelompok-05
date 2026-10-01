@@ -73,7 +73,7 @@
 
                             Mata Kuliah
                         </a>
-                    @elseif (auth()->user()?->role === 'mahasiswa')
+                    @elseif (auth()->user()?->role === 'student')
                         <a
                             href="{{ route('mahasiswa.mata-kuliah.index') }}"
                             class="flex items-center gap-3 rounded-xl px-4 py-3
