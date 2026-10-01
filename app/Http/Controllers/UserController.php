@@ -39,7 +39,7 @@ class UserController extends Controller
                 });
             })
             ->orderBy('name')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         return view('users.index', [
