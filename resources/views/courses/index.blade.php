@@ -1,5 +1,10 @@
 <x-layout title="Mata Kuliah">
 
+    @php
+        $courseRoutePrefix = request()->routeIs('mahasiswa.*') ? 'mahasiswa.' : 'dosen.';
+        $canManageCourses = request()->routeIs('dosen.*');
+    @endphp
+
     {{-- Header halaman memberikan informasi utama tentang daftar mata kuliah. --}}
     <div class="mb-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -23,10 +28,12 @@
                     ● Semester Genap
                 </span>
 
-                <a href="{{ route('mata-kuliah.create') }}"
-                    class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">
-                    + Tambah Mata Kuliah
-                </a>
+                @if ($canManageCourses)
+                    <a href="{{ route('dosen.mata-kuliah.create') }}"
+                        class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">
+                        + Tambah Mata Kuliah
+                    </a>
+                @endif
             </div>
 
         </div>
@@ -75,7 +82,7 @@
                     </p>
                 </div>
 
-                <form action="{{ route('mata-kuliah.index') }}" method="GET" class="flex flex-col sm:flex-row gap-2">
+                <form action="{{ route($courseRoutePrefix . 'mata-kuliah.index') }}" method="GET" class="flex flex-col sm:flex-row gap-2">
                     <input
                         type="search"
                         name="search"
@@ -164,34 +171,37 @@
                             <div class="flex items-center justify-center gap-2">
 
                                 <a
-                                    href="{{ route('mata-kuliah.show', $course->id) }}"
+                                    href="{{ route($courseRoutePrefix . 'mata-kuliah.show', $course->id) }}"
                                     class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold text-xs hover:bg-blue-700 transition"
                                 >
                                     Lihat Detail
                                 </a>
 
-                                <a
-                                    href="{{ route('mata-kuliah.edit', $course->id) }}"
-                                    class="inline-flex items-center px-4 py-2 rounded-lg bg-slate-500 text-slate-900 font-semibold text-xs hover:bg-slate-800 transition"                                >
-                                    Edit
-                                </a>
-
-                                <form
-                                    action="{{ route('mata-kuliah.destroy', $course->id) }}"
-                                    method="POST"
-                                    class="inline"
-                                    onsubmit="return confirm('Yakin ingin menghapus mata kuliah ini?')"
-                                >
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button
-                                        type="submit"
-                                        class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-slate-900 font-semibold text-xs hover:bg-red-700 transition"
+                                @if ($canManageCourses)
+                                    <a
+                                        href="{{ route('dosen.mata-kuliah.edit', $course->id) }}"
+                                        class="inline-flex items-center px-4 py-2 rounded-lg bg-slate-500 text-slate-900 font-semibold text-xs hover:bg-slate-800 transition"
                                     >
-                                        Hapus
-                                    </button>
-                                </form>
+                                        Edit
+                                    </a>
+
+                                    <form
+                                        action="{{ route('dosen.mata-kuliah.destroy', $course->id) }}"
+                                        method="POST"
+                                        class="inline"
+                                        onsubmit="return confirm('Yakin ingin menghapus mata kuliah ini?')"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button
+                                            type="submit"
+                                            class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-slate-900 font-semibold text-xs hover:bg-red-700 transition"
+                                        >
+                                            Hapus
+                                        </button>
+                                    </form>
+                                @endif
                                 
                             </div>
                         </td>

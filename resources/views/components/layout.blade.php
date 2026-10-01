@@ -44,7 +44,7 @@
 
                 {{-- Menu navigasi menggunakan route() agar URL tidak ditulis manual. --}}
                 <nav class="space-y-2">
-    
+
                     <a
                         href="{{ route('dashboard') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
@@ -59,32 +59,51 @@
                         Dashboard
                     </a>
 
-                    <a
-                        href="{{ route('mata-kuliah.index') }}"
-                        class="flex items-center gap-3 rounded-xl px-4 py-3
-                        {{ request()->routeIs('mata-kuliah.*')
-                            ? 'bg-blue-600 text-white font-semibold shadow-lg'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
-                    >
-                        <span class="material-symbols-outlined">
-                            menu_book
-                        </span>
+                    @if (auth()->user()?->role === 'dosen')
+                        <a
+                            href="{{ route('dosen.mata-kuliah.index') }}"
+                            class="flex items-center gap-3 rounded-xl px-4 py-3
+                            {{ request()->routeIs('dosen.mata-kuliah.*')
+                                ? 'bg-blue-600 text-white font-semibold shadow-lg'
+                                : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
+                        >
+                            <span class="material-symbols-outlined">
+                                menu_book
+                            </span>
 
-                        Mata Kuliah
-                    </a>
-                    <a
-                        href="{{ route('pengguna.index') }}"
-                        class="flex items-center gap-3 rounded-xl px-4 py-3
-                        {{ request()->routeIs('pengguna.*')
-                            ? 'bg-blue-600 text-white font-semibold shadow-lg'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
-                    >
-                        <span class="material-symbols-outlined">
-                            group
-                        </span>
+                            Mata Kuliah
+                        </a>
+                    @elseif (auth()->user()?->role === 'mahasiswa')
+                        <a
+                            href="{{ route('mahasiswa.mata-kuliah.index') }}"
+                            class="flex items-center gap-3 rounded-xl px-4 py-3
+                            {{ request()->routeIs('mahasiswa.mata-kuliah.*')
+                                ? 'bg-blue-600 text-white font-semibold shadow-lg'
+                                : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
+                        >
+                            <span class="material-symbols-outlined">
+                                menu_book
+                            </span>
 
-                        Pengguna
-                    </a>
+                            Mata Kuliah
+                        </a>
+                    @endif
+
+                    @if (auth()->user()?->role === 'admin')
+                        <a
+                            href="{{ route('admin.pengguna.index') }}"
+                            class="flex items-center gap-3 rounded-xl px-4 py-3
+                            {{ request()->routeIs('admin.pengguna.*')
+                                ? 'bg-blue-600 text-white font-semibold shadow-lg'
+                                : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
+                        >
+                            <span class="material-symbols-outlined">
+                                group
+                            </span>
+
+                            Pengguna
+                        </a>
+                    @endif
 
                     <a
                         href="{{ route('tentang') }}"

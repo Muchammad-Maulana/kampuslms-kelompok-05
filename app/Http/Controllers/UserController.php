@@ -83,7 +83,7 @@ class UserController extends Controller
         $user->save();
 
         return redirect()
-            ->route('pengguna.index')
+            ->route('admin.pengguna.index')
             ->with('status', "Pengguna \"{$user->name}\" berhasil ditambahkan.");
     }
 
@@ -136,7 +136,7 @@ class UserController extends Controller
         $pengguna->save();
 
         return redirect()
-            ->route('pengguna.index')
+            ->route('admin.pengguna.index')
             ->with('status', "Pengguna \"{$pengguna->name}\" berhasil diperbarui.");
     }
 
@@ -151,12 +151,12 @@ class UserController extends Controller
             $pengguna->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()
-                ->route('pengguna.index')
+                ->route('admin.pengguna.index')
                 ->with('error', "Pengguna \"{$name}\" tidak bisa dihapus karena masih memiliki data terkait (misalnya tugas yang sudah dikumpulkan atau mata kuliah yang diampu). Hapus/pindahkan data tersebut terlebih dahulu.");
         }
 
         return redirect()
-            ->route('pengguna.index')
+            ->route('admin.pengguna.index')
             ->with('status', "Pengguna \"{$name}\" berhasil dihapus.");
     }
 

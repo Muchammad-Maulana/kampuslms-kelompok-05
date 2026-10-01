@@ -7,7 +7,7 @@
                 Dashboard
             </a>
             <span class="text-slate-400">/</span>
-            <a href="{{ route('pengguna.index') }}" class="text-blue-600 hover:underline">
+            <a href="{{ route('admin.pengguna.index') }}" class="text-blue-600 hover:underline">
                 Pengguna
             </a>
             <span class="text-slate-400">/</span>
@@ -37,14 +37,14 @@
 
             <div class="flex items-center gap-2">
                 
-                 <a href="{{ route('pengguna.edit', $user) }}"
+                <a href="{{ route('admin.pengguna.edit', $user) }}"
                     class="inline-flex items-center px-5 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
                 >
                     <span class="material-symbols-outlined mr-2">edit</span>
                     Ubah
                 </a>
                 
-                 <a href="{{ route('pengguna.index') }}"
+                 <a href="{{ route('admin.pengguna.index') }}"
                     class="inline-flex items-center px-5 py-3 rounded-xl bg-slate-200 text-slate-700 font-semibold hover:bg-slate-300 transition"
                 >
                     <span class="material-symbols-outlined mr-2">arrow_back</span>
@@ -96,7 +96,7 @@
         </p>
 
         <form
-            action="{{ route('pengguna.destroy', $user) }}"
+            action="{{ route('admin.pengguna.destroy', $user) }}"
             method="POST"
             onsubmit="return confirm('Hapus pengguna \'{{ $user->name }}\'? Tindakan ini tidak dapat dibatalkan.');"
         >

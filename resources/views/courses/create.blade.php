@@ -4,7 +4,7 @@
 
         <h1 class="text-2xl font-bold mb-4">Tambah Mata Kuliah</h1>
 
-        <form action="{{ route('mata-kuliah.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('dosen.mata-kuliah.store') }}" method="POST" class="space-y-4">
         @csrf
 
         <div>
@@ -72,7 +72,7 @@
         </div>
 
         <div class="flex justify-end space-x-2">
-            <a href="{{ route('mata-kuliah.index') }}"
+            <a href="{{ route('dosen.mata-kuliah.index') }}"
             class="px-4 py-2 border rounded">
                 Batal
             </a>

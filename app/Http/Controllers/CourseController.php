@@ -48,7 +48,7 @@ class CourseController extends Controller
         Course::create($validated);
 
         return redirect()
-            ->route('mata-kuliah.index')
+            ->route('dosen.mata-kuliah.index')
             ->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
 
@@ -61,43 +61,39 @@ class CourseController extends Controller
         return response()->json($course, 201);
     }
 
-    public function show($mataKuliah)
+    public function show(Course $course)
     {
-        $course = Course::with('lecturer')->findOrFail($mataKuliah);
+        $course->load('lecturer');
 
         return view('courses.show', compact('course'));
     }
 
-    public function edit($mataKuliah)
+    public function edit(Course $course)
     {
-          $course = Course::with('lecturer')->findOrFail($mataKuliah);
+        $course->load('lecturer');
 
         $lecturers = \App\Models\User::where('role', 'dosen')->get();
 
         return view('courses.edit', compact('course', 'lecturers'));
     }
     
-    public function update(UpdateCourseRequest $request, $mataKuliah)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
         $validated = $request->validated();
-
-        $course = Course::findOrFail($mataKuliah);
 
         $course->update($validated);
 
         return redirect()
-            ->route('mata-kuliah.show', $mataKuliah)
+            ->route('dosen.mata-kuliah.show', $course)
             ->with('success', 'Mata kuliah berhasil diperbarui.');
     }
 
-    public function destroy($mataKuliah)
+    public function destroy(Course $course)
     {
-        $course = Course::findOrFail($mataKuliah);
-
         $course->delete();
 
         return redirect()
-            ->route('mata-kuliah.index')
+            ->route('dosen.mata-kuliah.index')
             ->with('success', 'Mata kuliah berhasil dihapus.');
     }
 }
