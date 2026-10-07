@@ -17,15 +17,16 @@ class UpdateCourseRequest extends FormRequest
         $course = $this->route('course');
 
         return [
-            'code' => ['required', 'string', 'max:255', Rule::unique('courses', 'code')->ignore($course)],
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'sks' => ['required', 'integer', 'between:1,6'],
+            'code' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('courses', 'code')->ignore($course)],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string'],
+            'sks' => ['sometimes', 'required', 'integer', 'between:1,6'],
             'lecturer_id' => [
+                'sometimes',
                 'required',
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'dosen')),
             ],
-            'status' => ['required', Rule::in(['draft', 'active', 'archived'])],
+            'status' => ['sometimes', 'required', Rule::in(['draft', 'active', 'archived'])],
         ];
     }
 }
