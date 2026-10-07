@@ -1,6 +1,6 @@
 # Dokumentasi API KampusLMS
 
-Dokumentasi endpoint terbaru dan request yang dapat dijalankan berada di [`docs/api.md`](../api.md). Bagian ini merupakan ringkasan materi; kontrak persis menunggu Bagian 5 spesifikasi LMS.
+Dokumentasi endpoint terbaru dan kontrak API v1 proyek berada di [`docs/api.md`](../api.md). Bagian ini merupakan ringkasan materi dan contoh endpoint.
 
 ## Autentikasi
 
@@ -50,6 +50,7 @@ Response:
 ```json
 {
   "data": [],
+  "links": {},
   "meta": {
     "per_page": 15,
     "current_page": 1,
@@ -104,4 +105,4 @@ Jika assignment tidak milik course yang diminta, endpoint mengembalikan `404`.
 | 422 | Validasi gagal |
 | 429 | Rate limit tercapai |
 
-API assignment juga menyediakan `POST` (201), `PUT/PATCH` (200), dan `DELETE` (204). Akses tulis dibatasi untuk admin dan dosen pemilik course.
+API course dan assignment menyediakan operasi tulis dengan status `201` saat membuat dan `204` saat menghapus. Hak mutasi course dibatasi untuk admin; assignment untuk admin dan dosen pemilik course.

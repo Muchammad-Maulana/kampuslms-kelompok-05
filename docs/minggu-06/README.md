@@ -3,6 +3,7 @@
 Dokumentasi Minggu 6 tersedia di:
 
 - `rancangan-bangunan-minggu-06.md`: rencana implementasi dan demo.
+- [`minggu-06-muchammad-maulana.md`](minggu-06-muchammad-maulana.md): catatan READ, BREAK, FIX, dan BUILD atas nama Muchammad Maulana.
 - `docs-api.md`: ringkasan endpoint dan status code.
 - [`../api.md`](../api.md): endpoint API dan contoh request.
 
