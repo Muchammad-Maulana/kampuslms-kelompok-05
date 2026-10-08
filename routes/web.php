@@ -62,12 +62,15 @@ Route::prefix('dosen')->name('dosen.')->middleware('role:dosen')->group(function
         ->name('mata-kuliah.store');
 
     Route::get('/mata-kuliah/{course}/edit', [CourseController::class, 'edit'])
+        ->middleware('can:update,course')
         ->name('mata-kuliah.edit');
 
     Route::put('/mata-kuliah/{course}', [CourseController::class, 'update'])
+        ->middleware('can:update,course')
         ->name('mata-kuliah.update');
 
     Route::delete('/mata-kuliah/{course}', [CourseController::class, 'destroy'])
+        ->middleware('can:delete,course')
         ->name('mata-kuliah.destroy');
 
     Route::get('/mata-kuliah/{course}', [CourseController::class, 'show'])
