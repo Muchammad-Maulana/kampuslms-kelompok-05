@@ -32,7 +32,7 @@ class LoginController extends Controller
         ])) {
             return back()->withErrors([
                 'email' => 'Email atau password salah.',
-            ])->withInput();
+            ])->withInput($request->only(['role']));
         }
 
         if ($user->role !== $credentials['role']) {
@@ -40,7 +40,7 @@ class LoginController extends Controller
 
             return back()->withErrors([
                 'role' => 'Role yang dipilih tidak cocok dengan akun ini.',
-            ])->withInput();
+            ])->withInput($request->only(['role']));
         }
 
         $request->session()->regenerate();

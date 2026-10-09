@@ -17,6 +17,7 @@ class SubmissionResource extends JsonResource
             'note' => $this->note,
             'submitted_at' => $this->submitted_at?->toIso8601String(),
             'is_late' => $this->is_late,
+            'student' => $this->whenLoaded('student', fn () => new UserResource($this->student)),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

@@ -7,12 +7,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:login')
         ->name('api.auth.login');
 
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::get('/me', [AuthController::class, 'me'])
             ->name('api.auth.me');
+        Route::get('/security/model-serialization-demo', [AuthController::class, 'modelSerializationDemo'])
+            ->name('api.security.model-serialization-demo');
+        Route::get('/demo/raw-users', [AuthController::class, 'modelSerializationDemo'])
+            ->name('api.demo.raw-users');
         Route::post('/auth/logout', [AuthController::class, 'logout'])
             ->name('api.auth.logout');
 

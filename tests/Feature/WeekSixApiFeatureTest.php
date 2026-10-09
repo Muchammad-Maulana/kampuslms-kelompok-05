@@ -35,6 +35,11 @@ class WeekSixApiFeatureTest extends TestCase
 
         $knownEmail->assertUnprocessable();
         $unknownEmail->assertUnprocessable();
+        $this->assertSame($knownEmail->status(), $unknownEmail->status());
+        $this->assertSame(
+            ['Email atau password salah.'],
+            $knownEmail->json('errors.email')
+        );
         $this->assertSame(
             $knownEmail->json('errors.email'),
             $unknownEmail->json('errors.email')
@@ -57,7 +62,8 @@ class WeekSixApiFeatureTest extends TestCase
 
         $response->assertOk()
             ->assertJsonStructure(['token', 'user' => ['id', 'name', 'email', 'role']])
-            ->assertJsonMissing(['password' => $user->password]);
+            ->assertJsonMissing(['password' => $user->password])
+            ->assertJsonMissing(['remember_token']);
         $this->assertDatabaseHas('personal_access_tokens', [
             'tokenable_id' => $user->id,
             'name' => 'feature-test',
@@ -77,6 +83,58 @@ class WeekSixApiFeatureTest extends TestCase
             'email' => 'unknown@kampuslms.test',
             'password' => 'wrong-password',
         ])->assertTooManyRequests();
+    }
+
+    public function test_me_returns_a_whitelisted_user_without_sensitive_fields(): void
+    {
+        $user = User::factory()->create([
+            'password' => 'password',
+            'role' => 'mahasiswa',
+        ]);
+
+        $this->withToken($user->createToken('me-test')->plainTextToken)
+            ->getJson('/api/v1/me')
+            ->assertOk()
+            ->assertJsonStructure(['data' => ['id', 'name', 'email', 'role']])
+            ->assertJsonMissing(['password', 'remember_token']);
+    }
+
+    public function test_model_serialization_demo_exposes_only_sensitive_field_names(): void
+    {
+        $user = User::factory()->create(['role' => 'mahasiswa']);
+
+        $this->withToken($user->createToken('demo-test')->plainTextToken)
+            ->getJson('/api/v1/security/model-serialization-demo')
+            ->assertOk()
+            ->assertJsonPath('unsafe_model.sensitive_fields_that_must_not_be_returned', ['password', 'remember_token'])
+            ->assertJsonPath('safe_resource.email', $user->email)
+            ->assertJsonMissingPath('safe_resource.password')
+            ->assertJsonMissingPath('safe_resource.remember_token');
+    }
+
+    public function test_raw_users_demo_alias_uses_the_safe_serialization_response(): void
+    {
+        $user = User::factory()->create(['role' => 'dosen']);
+
+        $this->withToken($user->createToken('raw-users-demo')->plainTextToken)
+            ->getJson('/api/v1/demo/raw-users')
+            ->assertOk()
+            ->assertJsonMissingPath('safe_resource.password')
+            ->assertJsonMissingPath('safe_resource.remember_token');
+    }
+
+    public function test_protected_course_endpoint_distinguishes_401_and_403(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $course = Course::factory()->create(['lecturer_id' => $lecturer->id]);
+
+        $this->getJson('/api/v1/courses/'.$course->id)
+            ->assertUnauthorized();
+
+        $this->withToken($student->createToken('authorization-demo')->plainTextToken)
+            ->getJson('/api/v1/courses/'.$course->id)
+            ->assertForbidden();
     }
 
     public function test_student_cannot_create_course(): void

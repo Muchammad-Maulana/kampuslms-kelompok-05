@@ -23,7 +23,7 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Email atau kata sandi salah.'],
+                'email' => ['Email atau password salah.'],
             ]);
         }
 
@@ -36,6 +36,25 @@ class AuthController extends Controller
     public function me(Request $request): UserResource
     {
         return new UserResource($request->user());
+    }
+
+    public function modelSerializationDemo(Request $request): array
+    {
+        $user = $request->user();
+        $rawFields = array_keys($user->getAttributes());
+        $sensitiveFields = array_values(array_intersect(
+            ['password', 'remember_token'],
+            $rawFields
+        ));
+
+        return [
+            'unsafe_model' => [
+                'fields_found' => $rawFields,
+                'sensitive_fields_that_must_not_be_returned' => $sensitiveFields,
+                'example' => 'Mengirim model mentah dapat membocorkan nilai field sensitif tersebut.',
+            ],
+            'safe_resource' => (new UserResource($user))->resolve($request),
+        ];
     }
 
     public function logout(Request $request): \Illuminate\Http\Response

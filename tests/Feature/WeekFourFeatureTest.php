@@ -64,6 +64,36 @@ class WeekFourFeatureTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_failed_login_discards_email_and_password(): void
+    {
+        $response = $this->from('/login')->post('/login', [
+            'email' => 'wrong@kampuslms.test',
+            'password' => 'wrong-password',
+            'role' => 'mahasiswa',
+        ]);
+
+        $response->assertRedirect('/login');
+    $response->assertSessionMissing('_old_input.email');
+        $response->assertSessionMissing('_old_input.password');
+    }
+
+    public function test_web_login_is_limited_to_five_failed_attempts_per_minute(): void
+    {
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->from('/login')->post('/login', [
+                'email' => 'throttle-web@kampuslms.test',
+                'password' => 'wrong-password',
+                'role' => 'mahasiswa',
+            ])->assertRedirect('/login');
+        }
+
+        $this->from('/login')->post('/login', [
+            'email' => 'throttle-web@kampuslms.test',
+            'password' => 'wrong-password',
+            'role' => 'mahasiswa',
+        ])->assertTooManyRequests();
+    }
+
     public function test_dashboard_displays_the_logged_in_role(): void
     {
         $dosen = User::factory()->create([

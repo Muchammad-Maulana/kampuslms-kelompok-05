@@ -11,7 +11,7 @@ Route::get('/dashboard', DashboardController::class)->middleware('auth')->name('
 Route::get('/tentang', fn () => view('tentang'))->name('tentang');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
