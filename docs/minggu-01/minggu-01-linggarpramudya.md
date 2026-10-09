@@ -5,7 +5,7 @@ Kelas : A
 
 ## 1.3 Read → Break → Fix → Build
 
-### READ — Bedah instalasi Anda sendiri (45 menit)
+### READ
 
 Setelah instalasi selesai dan halaman selamat datang Laravel muncul, kerjakan **tanpa AI**:
 
@@ -78,7 +78,7 @@ Setelah instalasi selesai dan halaman selamat datang Laravel muncul, kerjakan **
 
 
 
-### BREAK — Rusak dengan sengaja (30 menit)
+### BREAK
 
 Lakukan satu per satu, catat pesan errornya, lalu kembalikan:
 
