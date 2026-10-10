@@ -12,13 +12,10 @@ class CourseController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Course::class);
+
         $user = $request->user();
-        $query = match ($user->role) {
-            'admin' => Course::query(),
-            'dosen' => $user->taughtCourses(),
-            'mahasiswa' => $user->courses(),
-            default => abort(403),
-        };
+        $query = Course::query()->visibleTo($user);
         $query->with('lecturer');
 
         if ($request->filled('q')) {
@@ -42,13 +39,13 @@ class CourseController extends Controller
             'dosen' => 'dosen.mata-kuliah',
             'mahasiswa' => 'mahasiswa.mata-kuliah',
         };
-        $canManage = $user->role === 'admin';
-
-        return view('courses.index', compact('courses', 'routePrefix', 'canManage', 'totalSks'));
+        return view('courses.index', compact('courses', 'routePrefix', 'totalSks'));
     }
 
     public function create()
     {
+        $this->authorize('create', Course::class);
+
         $lecturers = User::where('role', 'dosen')->orderBy('name')->get();
 
         return view('courses.create', compact('lecturers'));
@@ -56,6 +53,8 @@ class CourseController extends Controller
 
     public function store(StoreCourseRequest $request)
     {
+        $this->authorize('create', Course::class);
+
         $validated = $request->validated();
 
         Course::create($validated);
@@ -65,15 +64,9 @@ class CourseController extends Controller
 
     public function show(Request $request, Course $course)
     {
-        $user = $request->user();
-        $canView = match ($user->role) {
-            'admin' => true,
-            'dosen' => $course->lecturer_id === $user->id,
-            'mahasiswa' => $user->courses()->whereKey($course->getKey())->exists(),
-            default => false,
-        };
+        $this->authorize('view', $course);
 
-        abort_unless($canView, 403);
+        $user = $request->user();
 
         $course->load('lecturer', 'materials');
         $course->load(['assignments' => function ($query) use ($user): void {
@@ -86,13 +79,13 @@ class CourseController extends Controller
             'dosen' => 'dosen.mata-kuliah',
             'mahasiswa' => 'mahasiswa.mata-kuliah',
         };
-        $canManage = $user->role === 'admin';
-
-        return view('courses.show', compact('course', 'routePrefix', 'canManage'));
+        return view('courses.show', compact('course', 'routePrefix'));
     }
 
     public function edit(Course $course)
     {
+        $this->authorize('update', $course);
+
         $lecturers = User::where('role', 'dosen')->orderBy('name')->get();
 
         return view('courses.edit', compact('course', 'lecturers'));
@@ -100,6 +93,8 @@ class CourseController extends Controller
 
     public function update(UpdateCourseRequest $request, Course $course)
     {
+        $this->authorize('update', $course);
+
         $validated = $request->validated();
 
         $course->update($validated);
@@ -109,6 +104,8 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
+        $this->authorize('delete', $course);
+
         $course->delete();
 
         return redirect()->route('admin.mata-kuliah.index')->with('success', 'Mata kuliah berhasil dihapus.');

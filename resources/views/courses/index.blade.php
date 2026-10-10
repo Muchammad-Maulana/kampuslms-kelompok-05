@@ -5,9 +5,9 @@
             <h1 class="mt-2 text-3xl font-bold text-slate-900">Daftar Mata Kuliah</h1>
             <p class="mt-2 text-sm text-slate-500">Data berikut diambil dari database KampusLMS.</p>
         </div>
-        @if ($canManage)
+        @can('create', \App\Models\Course::class)
             <a href="{{ route('admin.mata-kuliah.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Tambah Mata Kuliah</a>
-        @endif
+        @endcan
     </div>
 
     @if (session('success'))
@@ -44,7 +44,7 @@
 
     <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="border-b border-slate-200 bg-slate-50"><tr><th class="px-6 py-4 font-semibold text-slate-500">Kode</th><th class="px-6 py-4 font-semibold text-slate-500">Mata Kuliah</th><th class="px-6 py-4 font-semibold text-slate-500">SKS</th><th class="px-6 py-4 font-semibold text-slate-500">Dosen</th><th class="px-6 py-4 text-right font-semibold text-slate-500">Aksi</th></tr></thead><tbody class="divide-y divide-slate-100">
         @forelse ($courses as $course)
-            <tr class="hover:bg-slate-50"><td class="px-6 py-4 font-semibold text-blue-700">{{ $course->code }}</td><td class="px-6 py-4"><p class="font-semibold text-slate-900">{{ $course->name }}</p><p class="mt-1 text-xs capitalize text-slate-400">{{ $course->status }}</p></td><td class="px-6 py-4">{{ $course->sks }}</td><td class="px-6 py-4">{{ $course->lecturer?->name ?? 'Belum ditentukan' }}</td><td class="px-6 py-4 text-right"><div class="flex justify-end gap-2"><a href="{{ route('admin.mata-kuliah.show', $course) }}" class="rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">Detail</a>@if ($canManage)<a href="{{ route('admin.mata-kuliah.edit', $course) }}" class="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">Edit</a><form action="{{ route('admin.mata-kuliah.destroy', $course) }}" method="POST" onsubmit="return confirm('Hapus mata kuliah ini?')">@csrf @method('DELETE')<button type="submit" class="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">Hapus</button></form>@endif</div></td></tr>
+            <tr class="hover:bg-slate-50"><td class="px-6 py-4 font-semibold text-blue-700">{{ $course->code }}</td><td class="px-6 py-4"><p class="font-semibold text-slate-900">{{ $course->name }}</p><p class="mt-1 text-xs capitalize text-slate-400">{{ $course->status }}</p></td><td class="px-6 py-4">{{ $course->sks }}</td><td class="px-6 py-4">{{ $course->lecturer?->name ?? 'Belum ditentukan' }}</td><td class="px-6 py-4 text-right"><div class="flex justify-end gap-2"><a href="{{ route($routePrefix . '.show', $course) }}" class="rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">Detail</a>@can('update', $course)<a href="{{ route('admin.mata-kuliah.edit', $course) }}" class="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">Edit</a>@endcan @can('delete', $course)<form action="{{ route('admin.mata-kuliah.destroy', $course) }}" method="POST" onsubmit="return confirm('Hapus mata kuliah ini?')">@csrf @method('DELETE')<button type="submit" class="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">Hapus</button></form>@endcan</div></td></tr>
         @empty
             <tr><td colspan="5" class="px-6 py-10 text-center text-slate-500">Belum ada mata kuliah.</td></tr>
         @endforelse
