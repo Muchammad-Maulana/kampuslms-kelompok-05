@@ -20,6 +20,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->names('mata-kuliah');
 
     Route::resource('users', UserController::class)->names('users');
+    Route::post('users/{user}/password', [UserController::class, 'resetPassword'])
+        ->name('users.reset-password');
 
     Route::scopeBindings()->group(function () {
         Route::get('mata-kuliah/{course}/materials/{material}', [App\Http\Controllers\MaterialController::class, 'showScoped'])
