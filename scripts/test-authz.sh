@@ -7,8 +7,18 @@ TEMP_COURSE_ID=""
 TEMP_ASSIGNMENT_ID=""
 ADMIN_TOKEN=""
 LECTURER_TOKEN=""
+STUDENT_TOKEN=""
 
 PHP_BIN="${PHP_BIN:-php}"
+
+if ! command -v "$PHP_BIN" >/dev/null 2>&1; then
+	for candidate in /c/laragon/bin/php/php-*/php.exe; do
+		if [[ -x "$candidate" ]]; then
+			PHP_BIN="$candidate"
+			break
+		fi
+	done
+fi
 
 for command_name in curl "$PHP_BIN"; do
 	command -v "$command_name" >/dev/null || {
@@ -54,6 +64,12 @@ cleanup() {
 		curl -sS -X DELETE "$API/courses/$TEMP_COURSE_ID" \
 			-H "Authorization: Bearer $ADMIN_TOKEN" >/dev/null || true
 	fi
+	for token in "$STUDENT_TOKEN" "$LECTURER_TOKEN" "$ADMIN_TOKEN"; do
+		if [[ -n "$token" ]]; then
+			curl -sS -X POST "$API/auth/logout" \
+				-H "Authorization: Bearer $token" >/dev/null || true
+		fi
+	done
 }
 trap cleanup EXIT
 
@@ -62,7 +78,7 @@ capture_status() {
 	local expected="$2"
 	shift 2
 	local response actual
-	response="$(curl -sS -w $'\n%{http_code}' "$@")"
+	response="$(curl -sS -H 'Accept: application/json' -w $'\n%{http_code}' "$@")"
 	actual="${response##*$'\n'}"
 	RESPONSE_BODY="${response%$'\n'*}"
 	printf '%s=%s (expected %s)\n' "$label" "$actual" "$expected"
@@ -70,7 +86,7 @@ capture_status() {
 }
 
 expect_status() {
-	capture_status "$@" >/dev/null
+	capture_status "$@"
 }
 
 STUDENT_TOKEN="$(login mahasiswa@kampuslms.test)"
@@ -120,3 +136,5 @@ UPDATED_COURSE_BODY="$("$PHP_BIN" -r 'echo json_encode(["code" => $argv[1], "nam
 expect_status student_cannot_update_course 403 -X PATCH "$API/courses/$TEMP_COURSE_ID" -H "Authorization: Bearer $STUDENT_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$UPDATED_COURSE_BODY"
 capture_status admin_delete_course 204 -X DELETE "$API/courses/$TEMP_COURSE_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
 TEMP_COURSE_ID=""
+
+echo "All Week 7 authorization checks passed."
