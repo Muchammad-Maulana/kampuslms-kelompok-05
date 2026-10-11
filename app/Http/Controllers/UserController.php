@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -62,6 +65,21 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('admin.users.show', $user)->with('success', 'Pengguna berhasil diperbarui.');
+    }
+
+    public function resetPassword(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->password = $validated['password'];
+        $user->setRememberToken(Str::random(60));
+        $user->save();
+        $user->tokens()->delete();
+
+        return redirect()->route('admin.users.show', $user)
+            ->with('success', 'Kata sandi pengguna berhasil diatur ulang.');
     }
 
     public function destroy(User $user)

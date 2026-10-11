@@ -2,11 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Material extends Model
 {
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return match ($user->role) {
+            'admin' => $query,
+            'dosen' => $query->whereHas('course', fn (Builder $courses) => $courses->where('lecturer_id', $user->id)),
+            'mahasiswa' => $query->whereHas(
+                'course.students',
+                fn (Builder $students) => $students->whereKey($user->id)
+            ),
+            default => $query->whereRaw('1 = 0'),
+        };
+    }
+
     // Field material yang boleh diisi melalui mass assignment.
     protected $fillable = [
         'course_id',

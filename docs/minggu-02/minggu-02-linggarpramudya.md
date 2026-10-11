@@ -5,7 +5,7 @@ Kelas : A
 
 ## 2.3 Read → Break → Fix → Build
 
-### READ — Telusuri satu request penuh (30 menit)
+### READ
 
 Ambil route `/tentang` yang Anda buat minggu lalu. Tanpa AI, tulis di catatan Anda:
 
@@ -37,7 +37,7 @@ Route::get('/tentang', function () {
    ```
    Hanya ada satu route `GET|HEAD` untuk `tentang`.
 
-### BREAK — Delapan kerusakan (40 menit)
+### BREAK
 
 Lakukan berurutan. Untuk setiap nomor, **tulis prediksi Anda dulu** sebelum menjalankan.
 
@@ -51,12 +51,3 @@ Lakukan berurutan. Untuk setiap nomor, **tulis prediksi Anda dulu** sebelum menj
 | 6 | Hapus `@vite(...)` dari layout | Javascript sama css tidak terhubung ke browsernya | Tampilan halaman menjadi tidak normal karena CSS dan JavaScript dari Vite tidak termuat setelah `@vite(...)` dihapus. |
 | 7 | Hentikan `npm run dev` lalu muat ulang halaman | Aset CSS dan JavaScript tidak akan termuat sehingga tampilan halaman menjadi tidak normal. | Halaman tetap bisa dibuka, tetapi perubahan pada CSS dan JavaScript tidak lagi diterapkan karena server Vite dihentikan. |
 | 8 | Panggil `route('courses.show')` tanpa mengirim parameter | Akan muncul error karena parameter yang dibutuhkan oleh route courses.show tidak diberikan. | Muncul error Missing required parameter karena route courses.show membutuhkan parameter course. |
-
-## 2.4 Checkpoint Minggu 2
-
-- [ ] Kenapa menghapus data lewat `GET` berbahaya? Beri satu skenario konkret.
-- [ ] Apa yang terjadi kalau `/courses/{course}` ditulis sebelum `/courses/create`? Kenapa?
-- [ ] Tunjukkan di kode Anda satu tempat yang memakai `route()`. Apa untungnya dibanding URL hardcode?
-- [ ] Apa beda `{{ }}` dan `{!! !!}`? Peragakan XSS yang Anda buat di bagian BREAK.
-- [ ] Apa fungsi `@vite`? Apa beda `npm run dev` dan `npm run build`?
-- [ ] Jelaskan mengapa data dari `Request` tidak boleh dipercaya.
