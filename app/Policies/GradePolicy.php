@@ -20,17 +20,17 @@ class GradePolicy
 
     public function create(User $user, Submission $submission): bool
     {
-        return $this->canManageCourse($user, $submission);
+        return $this->canGrade($user, $submission);
     }
 
     public function update(User $user, Grade $grade): bool
     {
-        return $this->canManageCourse($user, $grade->submission);
+        return $this->canGrade($user, $grade->submission);
     }
 
     public function delete(User $user, Grade $grade): bool
     {
-        return $this->canManageCourse($user, $grade->submission);
+        return $this->canGrade($user, $grade->submission);
     }
 
     private function canViewSubmission(User $user, Submission $submission): bool
@@ -44,5 +44,11 @@ class GradePolicy
         return $user->role === 'admin'
             || ($user->role === 'dosen'
                 && $submission->assignment->course->lecturer_id === $user->id);
+    }
+
+    private function canGrade(User $user, Submission $submission): bool
+    {
+        return $user->role === 'dosen'
+            && $submission->assignment->course->lecturer_id === $user->id;
     }
 }

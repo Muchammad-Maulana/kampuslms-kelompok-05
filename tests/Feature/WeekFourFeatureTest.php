@@ -107,9 +107,20 @@ class WeekFourFeatureTest extends TestCase
         $this->assertSame(15, Assignment::count());
         $this->assertSame(100, Submission::count());
         $this->assertSame(60, Grade::count());
+        $this->assertGreaterThan(0, Submission::where('is_late', true)->count());
 
         Course::query()->each(function (Course $course): void {
             $this->assertGreaterThanOrEqual(15, $course->students()->count());
         });
+
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertSame(1, User::where('role', 'admin')->count());
+        $this->assertSame(3, User::where('role', 'dosen')->count());
+        $this->assertSame(30, User::where('role', 'mahasiswa')->count());
+        $this->assertSame(5, Course::count());
+        $this->assertSame(15, Assignment::count());
+        $this->assertSame(100, Submission::count());
+        $this->assertSame(60, Grade::count());
     }
 }

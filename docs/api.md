@@ -51,6 +51,11 @@ Response koleksi memakai `data`, `links`, dan `meta` bawaan paginator Laravel. C
 
 `GET /courses/{course}` — perlu token dan hak akses atas course.
 
+### Daftar materi
+
+`GET /courses/{course}/materials` — perlu token dan hak akses atas course. Daftar
+dibatasi ke materi yang dapat dilihat oleh role pemanggil dan memakai pagination.
+
 ### Buat course
 
 `POST /courses` — admin saja. Memakai validasi course yang sama dengan aplikasi web dan mengembalikan `201 Created` beserta resource course.
@@ -69,18 +74,18 @@ Field wajib: `code`, `name`, `sks`, `lecturer_id`, dan `status`. `description` o
 
 ### Daftar
 
-`GET /courses/{course}/assignments` — perlu token dan hak akses atas course. Mahasiswa hanya melihat assignment berstatus `published`.
+`GET /courses/{course}/assignments` — perlu token dan hak akses atas course. Mahasiswa hanya melihat assignment berstatus `published`. Mendukung `?status=draft|published` dan pagination `?page=`.
 
 ### Buat assignment
 
-`POST /courses/{course}/assignments` — admin atau dosen pemilik course. Mengembalikan `201 Created`.
+`POST /assignments` — admin atau dosen pemilik course. Sertakan `course_id`; server memeriksa ownership melalui `AssignmentPolicy` dan mengisi `created_by` dari token. Mengembalikan `201 Created`. Path nested `/courses/{course}/assignments` tetap tersedia.
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/v1/courses/<course-id>/assignments \
+curl -X POST http://127.0.0.1:8000/api/v1/assignments \
   -H 'Accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
-  -d '{"title":"Tugas API","instructions":"Kerjakan tugas.","due_at":"2026-10-20T12:00:00Z","status":"published"}'
+  -d '{"course_id":1,"title":"Tugas API","instructions":"Kerjakan tugas.","due_at":"2026-10-20T12:00:00Z","status":"published"}'
 ```
 
 Field wajib: `title`, `instructions`, dan `due_at`. `max_score`, `allow_late`, dan `status` opsional.
@@ -91,11 +96,13 @@ Field wajib: `title`, `instructions`, dan `due_at`. `max_score`, `allow_late`, d
 
 ### Perbarui assignment
 
-`PUT/PATCH /courses/{course}/assignments/{assignment}` — admin atau dosen pemilik course. Field yang dapat diubah: `title`, `instructions`, `due_at`, `max_score`, `allow_late`, dan `status`.
+`PUT/PATCH /assignments/{assignment}` — admin atau dosen pengampu. Field yang dapat diubah: `title`, `instructions`, `due_at`, `max_score`, `allow_late`, dan `status`. Path nested `/courses/{course}/assignments/{assignment}` tetap tersedia dan memeriksa pasangan course-assignment.
 
 ### Hapus assignment
 
-`DELETE /courses/{course}/assignments/{assignment}` — admin atau dosen pemilik course. Berhasil mengembalikan `204 No Content`.
+`DELETE /assignments/{assignment}` — admin atau dosen pengampu. Mengembalikan `204 No Content`. Path nested juga tersedia.
+
+Pengumpulan tugas, penilaian, dan notifikasi belum diimplementasikan pada milestone ini; alur akademik penuh dijadwalkan untuk M3.
 
 ## Status response
 
@@ -110,4 +117,3 @@ Field wajib: `title`, `instructions`, dan `due_at`. `max_score`, `allow_late`, d
 | 422 | Validasi gagal |
 | 429 | Batas request tercapai |
 
-Operasi tulis dan bentuk response API tetap perlu dicocokkan dengan Bagian 5 spesifikasi LMS sebelum dinyatakan final.

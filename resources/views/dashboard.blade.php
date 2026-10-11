@@ -70,86 +70,14 @@
 
                 </section>
 
-                <div
-                    class="grid grid-cols-1
-                        md:grid-cols-3
-                        gap-4"
-                >
-
-                    <div
-                        class="bg-white
-                            rounded-xl
-                            p-5
-                            shadow-sm"
-                    >
-
-                        <span
-                            class="material-symbols-outlined
-                                text-[#4648d4]"
-                        >
-                            menu_book
-                        </span>
-
-                        <p class="text-sm text-[#464554] mt-3">
-                            Mata Kuliah
-                        </p>
-
-                        <p class="text-2xl font-bold mt-1">
-                            {{ $courseCount }}
-                        </p>
-
-                    </div>
-
-
-                    <div
-                        class="bg-white
-                            rounded-xl
-                            p-5
-                            shadow-sm"
-                    >
-
-                        <span
-                            class="material-symbols-outlined
-                                text-[#6b38d4]"
-                        >
-                            school
-                        </span>
-
-                        <p class="text-sm text-[#464554] mt-3">
-                            Total SKS
-                        </p>
-
-                        <p class="text-2xl font-bold mt-1">
-                            {{ $totalSks }}
-                        </p>
-
-                    </div>
-
-
-                    <div
-                        class="bg-white
-                            rounded-xl
-                            p-5
-                            shadow-sm"
-                    >
-
-                        <span
-                            class="material-symbols-outlined
-                                text-[#00628d]"
-                        >
-                            assignment
-                        </span>
-
-                        <p class="text-sm text-[#464554] mt-3">
-                            Status akses
-                        </p>
-
-                        <p class="text-2xl font-bold mt-1">
-                            {{ $roleLabel }}
-                        </p>
-
-                    </div>
-
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    @foreach ($roleStats as $stat)
+                        <div class="rounded-xl bg-white p-5 shadow-sm">
+                            <span class="material-symbols-outlined text-blue-700">{{ $role === 'admin' ? 'admin_panel_settings' : ($role === 'dosen' ? 'assignment' : 'menu_book') }}</span>
+                            <p class="mt-3 text-sm text-slate-600">{{ $stat['label'] }}</p>
+                            <p class="mt-1 text-2xl font-bold text-slate-900">{{ $stat['value'] }}</p>
+                        </div>
+                    @endforeach
                 </div>
 
                 <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panduan Checkpoint Minggu 6 - Muchammad Maulana</title>
+<style>
+  @page { size: A4; margin: 17mm 16mm 19mm; @bottom-right { content: "KampusLMS | Halaman " counter(page); color: #64748b; font: 8pt Arial, sans-serif; } }
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: #172033; font: 10pt/1.52 Arial, Helvetica, sans-serif; }
+  h1, h2, h3 { color: #102a43; line-height: 1.2; }
+  h1 { margin: 0 0 7mm; font-size: 26pt; }
+  h2 { margin: 9mm 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid #d39b36; font-size: 17pt; break-after: avoid; }
+  h3 { margin: 5mm 0 1.5mm; font-size: 12pt; break-after: avoid; }
+  p { margin: 1.5mm 0 2mm; }
+  ul, ol { margin: 1mm 0 3mm; padding-left: 6mm; }
+  li { margin: 1mm 0; }
+  code { font: 8.5pt Consolas, "Courier New", monospace; color: #174a63; }
+  pre { margin: 2mm 0 3mm; padding: 3mm 3.5mm; border-left: 3px solid #d39b36; background: #f1f5f9; white-space: pre-wrap; overflow-wrap: anywhere; font: 8.2pt/1.4 Consolas, "Courier New", monospace; color: #152b3c; break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 8.5pt; }
+  th { color: white; background: #17324d; text-align: left; }
+  th, td { border: 1px solid #cbd5e1; padding: 2mm; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .cover { min-height: 245mm; display: flex; flex-direction: column; justify-content: center; break-after: page; }
+  .eyebrow { margin-bottom: 4mm; color: #9b6b13; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+  .subtitle { margin: 0 0 9mm; color: #52657a; font-size: 14pt; }
+  .identity { padding: 5mm; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; }
+  .callout { margin: 3mm 0; padding: 3mm 4mm; background: #eef5f8; border-left: 3px solid #28708b; }
+  .answer { margin: 2mm 0 3mm; padding: 3mm 4mm; background: #f7f8fa; border-left: 3px solid #d39b36; }
+  .path { color: #315b71; font: 8.5pt Consolas, "Courier New", monospace; overflow-wrap: anywhere; }
+  .question { break-inside: avoid; }
+  .small { color: #52657a; font-size: 8.5pt; }
+  .break-before { break-before: page; }
+  .no-break { break-inside: avoid; }
+</style>
+</head>
+<body>
+<section class="cover">
+  <div class="eyebrow">KampusLMS | Panduan Belajar</div>
+  <h1>Checkpoint<br>Minggu 6</h1>
+  <p class="subtitle">REST API, Sanctum, Resource, Status HTTP, dan Rate Limiting</p>
+  <div class="identity">
+    <p><strong>Nama:</strong> Muchammad Maulana</p>
+    <p><strong>NIM:</strong> 10241043</p>
+    <p><strong>Proyek:</strong> KampusLMS, Laravel 12</p>
+    <p><strong>Frontend semester:</strong> Blade + Livewire</p>
+  </div>
+  <div class="callout">Setiap soal berisi jawaban lisan, contoh kode, lokasi implementasi, dan langkah demo yang dapat diulang.</div>
+</section>
+
+<h2>Peta API</h2>
+<p>Web Blade memakai session/cookie dan merender HTML. API v1 memakai bearer token Sanctum, menerima request JSON, dan mengembalikan response JSON melalui API Resource. Identitas token harus dikirim kembali pada setiap request protected.</p>
+<pre>POST /api/v1/auth/login
+  -> Sanctum membuat bearer token
+GET /api/v1/courses + Authorization: Bearer &lt;token&gt;
+  -> auth:sanctum memverifikasi token
+  -> controller memfilter data menurut role
+  -> API Resource memilih field whitelist
+  -> JSON: data + links + meta</pre>
+<p><strong>Base URL lokal:</strong> <code>http://127.0.0.1:8000/api/v1</code>. Sertakan header <code>Accept: application/json</code>, terutama saat menguji validasi dan error.</p>
+
+<h2>Checkpoint 1 — Mengapa model mentah berbahaya?</h2>
+<div class="question">
+<h3>Jawaban</h3>
+<p>Model mentah dapat menserialisasi banyak kolom database. Daftar hitam seperti <code>$hidden</code> hanya melindungi field yang diingat developer; kolom sensitif baru dapat bocor jika tidak dimasukkan ke daftar tersebut. API Resource adalah whitelist: hanya field yang ditulis di <code>toArray()</code> yang dikirim.</p>
+<div class="answer"><strong>Jawaban lisan:</strong> “Saya tidak mengembalikan model mentah karena kolom baru bisa ikut terserialisasi tanpa sengaja. Saya memakai API Resource agar response menjadi whitelist dan hanya berisi field yang memang dibutuhkan client.”</div>
+<h3>Contoh kode</h3>
+<pre>// Jangan lakukan:
+return response()-&gt;json(User::all());
+
+// Gunakan Resource:
+return new UserResource($request-&gt;user());</pre>
+<h3>Lokasi kode</h3>
+<p class="path">app/Http/Resources/UserResource.php — whitelist field user<br>app/Http/Resources/CourseResource.php — whitelist course dan relasi lecturer<br>app/Http/Controllers/Api/AuthController.php — response login dan /me<br>tests/Feature/WeekSixApiFeatureTest.php — test_login_returns_sanctum_token_and_whitelisted_user()</p>
+<h3>Demonstrasi</h3>
+<ol>
+<li>Buka <code>UserResource::toArray()</code> dan tunjukkan field yang keluar.</li>
+<li>Tunjukkan bahwa <code>password</code> dan <code>remember_token</code> tidak ada dalam array return.</li>
+<li>Jalankan <code>php artisan test --filter=test_login_returns_sanctum_token_and_whitelisted_user</code>.</li>
+<li>Jelaskan bahwa test memastikan response memuat field publik dan tidak mengirim password.</li>
+</ol>
+<div class="callout"><strong>Demo BREAK aman:</strong> gunakan database test/factory saja. Jangan menghapus <code>$hidden</code> pada model aktif atau menampilkan record pengguna sungguhan.</div>
+</div>
+
+<h2>Checkpoint 2 — Apa beda 401 dan 403?</h2>
+<div class="question">
+<h3>Jawaban</h3>
+<p><strong>401 Unauthorized</strong> berarti request belum memberikan identitas yang valid, misalnya token tidak ada atau token salah. <strong>403 Forbidden</strong> berarti identitas valid sudah diketahui, tetapi pengguna tidak memiliki izin terhadap resource atau tindakan tersebut.</p>
+<div class="answer"><strong>Jawaban lisan:</strong> “401 itu identitas belum terbukti; 403 itu identitas sudah diketahui, tetapi tindakannya tidak diizinkan. Di API saya, request course tanpa token mendapat 401, sedangkan mahasiswa yang mencoba membuat assignment mendapat 403.”</div>
+<h3>Contoh kode</h3>
+<pre>// Semua endpoint data berada di balik autentikasi token:
+Route::middleware(['auth:sanctum', 'throttle:60,1'])-&gt;group(function () {
+    Route::post('/courses/{course}/assignments', [AssignmentController::class, 'store']);
+});
+
+// AssignmentController::authorizeCourseManage()
+abort_unless($allowed, 403);</pre>
+<h3>Lokasi kode</h3>
+<p class="path">routes/api.php — group auth:sanctum<br>app/Http/Controllers/Api/AssignmentController.php — authorizeCourseManage()<br>tests/Feature/WeekSixApiFeatureTest.php — test_api_course_list_requires_authentication() dan test_student_cannot_create_assignment()</p>
+<h3>Demonstrasi</h3>
+<p>401 tanpa token:</p>
+<pre>curl.exe -i -H "Accept: application/json" http://127.0.0.1:8000/api/v1/courses</pre>
+<p>Login demo untuk mendapat token:</p>
+<pre>$login = Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8000/api/v1/auth/login `
+  -Headers @{ Accept = 'application/json' } `
+  -ContentType 'application/json' `
+  -Body (@{ email = 'mahasiswa@kampuslms.test'; password = 'password'; device_name = 'checkpoint' } | ConvertTo-Json)
+$token = $login.token</pre>
+<p>403 mahasiswa mencoba membuat assignment pada course yang dapat dibacanya:</p>
+<pre>$courses = Invoke-RestMethod -Uri http://127.0.0.1:8000/api/v1/courses -Headers @{ Authorization = "Bearer $token"; Accept = 'application/json' }
+$courseId = $courses.data[0].id
+$body = @{ title = 'Tes'; instructions = 'Tes otorisasi'; due_at = '2030-01-01T00:00:00Z' } | ConvertTo-Json
+Invoke-WebRequest -Method Post -Uri "http://127.0.0.1:8000/api/v1/courses/$courseId/assignments" -Headers @{ Authorization = "Bearer $token"; Accept = 'application/json' } -ContentType 'application/json' -Body $body</pre>
+<p class="small">PowerShell akan menampilkan error HTTP untuk status non-2xx; periksa status response 403. Alternatif yang stabil: jalankan test feature API yang disebut di atas.</p>
+</div>
+
+<h2>Checkpoint 3 — Mengaktifkan API routes di Laravel 12</h2>
+<div class="question">
+<h3>Jawaban</h3>
+<p>Pada skeleton Laravel 12, <code>routes/api.php</code> tidak selalu dibuat otomatis. Perintah <code>php artisan install:api</code> memasang scaffolding API, Sanctum, konfigurasi token, dan migration token. <code>bootstrap/app.php</code> perlu memuat file route API agar endpoint terdaftar dengan prefix <code>/api</code>; route proyek menambahkan versi <code>/v1</code>.</p>
+<div class="answer"><strong>Jawaban lisan:</strong> “Saya mengaktifkan API dengan <code>php artisan install:api</code>. Di Laravel 12, bootstrap aplikasi menentukan file route yang dimuat. File API kemudian menerima prefix /api, dan grup versi proyek menambahkan /v1.”</div>
+<h3>Contoh kode</h3>
+<pre>// bootstrap/app.php
+-&gt;withRouting(
+    web: __DIR__.'/../routes/web.php',
+    api: __DIR__.'/../routes/api.php',
+    commands: __DIR__.'/../routes/console.php',
+    health: '/up',
+)
+
+// routes/api.php
+Route::prefix('v1')-&gt;group(function () {
+    Route::post('/auth/login', [AuthController::class, 'login']);
+});</pre>
+<h3>Lokasi kode</h3>
+<p class="path">bootstrap/app.php — pendaftaran routes/api.php<br>routes/api.php — route API v1<br>database/migrations/2026_10_06_014722_create_personal_access_tokens_table.php — tabel token<br>app/Models/User.php — trait Laravel\Sanctum\HasApiTokens</p>
+<h3>Demonstrasi</h3>
+<ol>
+<li>Tunjukkan bagian <code>api:</code> di <code>bootstrap/app.php</code>.</li>
+<li>Tunjukkan <code>Route::prefix('v1')</code> di <code>routes/api.php</code>.</li>
+<li>Jalankan <code>php artisan route:list --path=api</code> dan tunjukkan route login, me, courses, dan assignments.</li>
+<li>Jalankan <code>php artisan install:api</code> hanya pada project baru yang belum memasang API; jangan menjalankan berulang pada database yang sudah digunakan tanpa memeriksa migrasi.</li>
+</ol>
+</div>
+
+<h2>Checkpoint 4 — Apa fungsi whenLoaded()?</h2>
+<div class="question">
+<h3>Jawaban</h3>
+<p><code>whenLoaded()</code> memasukkan relasi hanya jika controller sudah melakukan eager load. Ini mencegah Resource memicu lazy loading tersembunyi untuk setiap item. Tanpa eager load, relasi tidak disertakan oleh Resource; bila kode malah mengakses relasi langsung pada setiap baris, query dapat membengkak menjadi N+1.</p>
+<div class="answer"><strong>Jawaban lisan:</strong> “whenLoaded menjaga Resource tidak memaksa query relasi. Controller menentukan kapan relasi diambil, biasanya dengan with(). Jadi query list terkontrol dan tidak satu query tambahan per course.”</div>
+<h3>Contoh kode</h3>
+<pre>// app/Http/Controllers/Api/CourseController.php
+$query-&gt;with('lecturer')-&gt;withCount(['materials', 'assignments']);
+
+// app/Http/Resources/CourseResource.php
+'lecturer' =&gt; $this-&gt;whenLoaded(
+    'lecturer', fn () =&gt; new UserResource($this-&gt;lecturer)
+),
+'counts' =&gt; [
+    'materials' =&gt; $this-&gt;whenCounted('materials'),
+    'assignments' =&gt; $this-&gt;whenCounted('assignments'),
+],</pre>
+<h3>Lokasi kode</h3>
+<p class="path">app/Http/Controllers/Api/CourseController.php — index() dan show()<br>app/Http/Resources/CourseResource.php — whenLoaded() dan whenCounted()<br>app/Http/Controllers/Api/AssignmentController.php — index() memakai with('creator')<br>app/Http/Resources/AssignmentResource.php — creator hanya disertakan saat dimuat</p>
+<h3>Demonstrasi</h3>
+<ol>
+<li>Buka endpoint daftar course dan tunjukkan query eager load.</li>
+<li>Buka <code>CourseResource</code> dan jelaskan kapan lecturer/count tersedia.</li>
+<li>Jalankan <code>php artisan test --filter=test_api_resource_returns_only_public_course_fields</code>.</li>
+<li>Untuk latihan BREAK, hapus sementara <code>with('lecturer')</code>, jalankan request, dan amati field lecturer tidak dikirim karena <code>whenLoaded()</code>. Pulihkan barisnya setelah demo.</li>
+</ol>
+</div>
+
+<h2>Checkpoint 5 — Kenapa pesan gagal login harus sama?</h2>
+<div class="question">
+<h3>Jawaban</h3>
+<p>Jika API menjawab “email tidak ditemukan” untuk satu kasus dan “password salah” untuk kasus lain, pihak luar dapat menguji apakah sebuah email terdaftar. Ini disebut <em>user enumeration</em>. Gunakan pesan generik untuk kedua kegagalan.</p>
+<div class="answer"><strong>Jawaban lisan:</strong> “Pesan error login saya tidak membedakan email dan password supaya response tidak menjadi alat untuk menebak akun yang terdaftar. Detail teknisnya tetap dicatat di sisi server, bukan dibuka ke client.”</div>
+<h3>Contoh kode</h3>
+<pre>if (! $user || ! Hash::check($credentials['password'], $user-&gt;password)) {
+    throw ValidationException::withMessages([
+        'email' =&gt; ['Email atau kata sandi salah.'],
+    ]);
+}</pre>
+<h3>Lokasi kode</h3>
+<p class="path">app/Http/Controllers/Api/AuthController.php — login()<br>tests/Feature/WeekSixApiFeatureTest.php — test_login_does_not_reveal_whether_email_exists()</p>
+<h3>Demonstrasi</h3>
+<ol>
+<li>Jalankan <code>php artisan test --filter=test_login_does_not_reveal_whether_email_exists</code>.</li>
+<li>Tunjukkan test mengirim email yang ada dengan password salah dan email yang tidak ada.</li>
+<li>Keduanya menghasilkan 422 dan isi <code>errors.email</code> yang sama.</li>
+</ol>
+</div>
+
+<h2>Checkpoint 6 — Kenapa login wajib di-throttle?</h2>
+<div class="question">
+<h3>Jawaban</h3>
+<p>Tanpa rate limit, penyerang dapat mengirim percobaan password berulang dengan cepat. API ini membatasi login menjadi <strong>5 request per menit</strong>; endpoint protected lain dibatasi <strong>60 request per menit</strong>. Saat batas login terlampaui, Laravel mengembalikan <strong>429 Too Many Requests</strong>.</p>
+<div class="answer"><strong>Jawaban lisan:</strong> “Login saya throttle 5 per menit untuk memperlambat brute force. Endpoint API ber-token memakai 60 per menit agar penggunaan normal tetap lancar. Nilai ini kebijakan awal proyek dan dapat disesuaikan berdasarkan pemantauan.”</div>
+<h3>Contoh kode</h3>
+<pre>// routes/api.php
+Route::post('/auth/login', [AuthController::class, 'login'])
+    -&gt;middleware('throttle:5,1');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1'])-&gt;group(function () {
+    // endpoint API protected
+});</pre>
+<h3>Lokasi kode</h3>
+<p class="path">routes/api.php — throttle login dan group protected<br>tests/Feature/WeekSixApiFeatureTest.php — test_login_is_limited_to_five_attempts_per_minute()</p>
+<h3>Demonstrasi</h3>
+<ol>
+<li>Jalankan <code>php artisan test --filter=test_login_is_limited_to_five_attempts_per_minute</code>.</li>
+<li>Test melakukan lima percobaan gagal lalu memastikan percobaan keenam mendapatkan 429.</li>
+<li>Tunjukkan middleware throttle di route API. Jangan melakukan stress test ke server publik.</li>
+</ol>
+</div>
+
+<h2>Ringkasan BREAK–FIX</h2>
+<table>
+<thead><tr><th>BREAK</th><th>Gejala</th><th>FIX / bukti</th></tr></thead>
+<tbody>
+<tr><td>Model mentah dikirim</td><td>Field database tak disengaja ikut keluar</td><td>Resource whitelist; test response tidak memuat password</td></tr>
+<tr><td>auth:sanctum dihapus</td><td>Request tanpa token dapat masuk</td><td>Group protected; tanpa token menghasilkan 401</td></tr>
+<tr><td>Token direvoke dipakai</td><td>Token invalid semestinya ditolak</td><td>Logout menghapus current token; Sanctum menolak token invalid</td></tr>
+<tr><td>Mahasiswa POST assignment</td><td>403, bukan 401</td><td>Otorisasi role dan ownership ada di controller</td></tr>
+<tr><td>Eager load dihapus</td><td>Relasi tak dimuat hilang; akses langsung berisiko N+1</td><td>with(), withCount(), whenLoaded(), whenCounted()</td></tr>
+<tr><td>Throttle login dihapus</td><td>Request keenam tidak mendapat 429</td><td>throttle:5,1 dan feature test</td></tr>
+<tr><td>Error login dibedakan</td><td>Email terdaftar dapat ditebak</td><td>Pesan generik dan test kesetaraan error</td></tr>
+</tbody>
+</table>
+
+<h2>Referensi File</h2>
+<table>
+<thead><tr><th>File</th><th>Yang ditunjukkan</th></tr></thead>
+<tbody>
+<tr><td class="path">routes/api.php</td><td>Endpoint v1, auth:sanctum, rate limit</td></tr>
+<tr><td class="path">bootstrap/app.php</td><td>Registrasi route API Laravel 12</td></tr>
+<tr><td class="path">app/Http/Controllers/Api/AuthController.php</td><td>Login, pesan generik, /me, logout</td></tr>
+<tr><td class="path">app/Http/Controllers/Api/CourseController.php</td><td>Query role, CRUD, eager loading</td></tr>
+<tr><td class="path">app/Http/Controllers/Api/AssignmentController.php</td><td>Ownership course, published/draft, CRUD</td></tr>
+<tr><td class="path">app/Http/Resources/</td><td>User, Course, Material, Assignment, Submission, Grade whitelist</td></tr>
+<tr><td class="path">tests/Feature/WeekSixApiFeatureTest.php</td><td>Bukti status code, resource, throttle, dan otorisasi</td></tr>
+<tr><td class="path">docs/api.md</td><td>Kontrak API v1 dan contoh request</td></tr>
+</tbody>
+</table>
+
+<h2>Latihan Akhir</h2>
+<ol>
+<li>Jalankan <code>php artisan route:list --path=api</code> dan tunjukkan route.</li>
+<li>Login dengan akun demo, simpan token, lalu request daftar course dengan bearer token.</li>
+<li>Bandingkan request tanpa token (401) dengan mahasiswa mencoba create assignment (403).</li>
+<li>Tunjukkan resource whitelist, eager loading, throttle, dan test yang membuktikannya.</li>
+<li>Jalankan seluruh test: <code>php artisan test</code>.</li>
+</ol>
+<div class="callout"><strong>Kalimat penutup:</strong> “API Week 6 memisahkan response dari tampilan, memakai token Sanctum, membatasi data melalui Resource whitelist, serta menguji autentikasi, otorisasi, rate limit, dan status HTTP. Frontend kelompok untuk minggu selanjutnya adalah Blade + Livewire.”</div>
+</body>
+</html>
