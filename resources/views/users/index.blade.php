@@ -11,6 +11,24 @@
     @if (session('success'))<div class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-700">{{ session('success') }}</div>@endif
     @if (session('error'))<div class="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-700">{{ session('error') }}</div>@endif
 
+    <form method="GET" action="{{ route('admin.users.index') }}" class="mb-5 flex flex-wrap items-end gap-3">
+        <div class="min-w-56 flex-1">
+            <label for="q" class="block text-sm font-semibold text-slate-700">Cari pengguna</label>
+            <input id="q" name="q" type="search" value="{{ $filters['q'] ?? '' }}" placeholder="Nama, email, atau NIM/NIP" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+        </div>
+        <div class="w-48">
+            <label for="role" class="block text-sm font-semibold text-slate-700">Role</label>
+            <select id="role" name="role" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                <option value="">Semua role</option>
+                @foreach (['admin', 'dosen', 'mahasiswa'] as $role)
+                    <option value="{{ $role }}" @selected(($filters['role'] ?? '') === $role)>{{ ucfirst($role) }}</option>
+                @endforeach
+            </select>
+        </div>
+        <button type="submit" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white">Filter</button>
+        <a href="{{ route('admin.users.index') }}" class="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Reset</a>
+    </form>
+
     <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
@@ -25,4 +43,5 @@
             </table>
         </div>
     </div>
+    <div class="mt-5">{{ $users->links() }}</div>
 </x-layout>

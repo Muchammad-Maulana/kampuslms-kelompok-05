@@ -9,14 +9,35 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::withCount(['taughtCourses', 'submissions'])->latest()->get();
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'role' => ['nullable', Rule::in(['admin', 'dosen', 'mahasiswa'])],
+        ]);
 
-        return view('users.index', compact('users'));
+        $query = User::query()->withCount(['taughtCourses', 'submissions']);
+
+        if (! empty($filters['q'])) {
+            $keyword = trim($filters['q']);
+            $query->where(function ($userQuery) use ($keyword): void {
+                $userQuery->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('email', 'like', "%{$keyword}%")
+                    ->orWhere('nim_nip', 'like', "%{$keyword}%");
+            });
+        }
+
+        if (! empty($filters['role'])) {
+            $query->where('role', $filters['role']);
+        }
+
+        $users = $query->latest()->paginate(15)->withQueryString();
+
+        return view('users.index', compact('users', 'filters'));
     }
 
     public function create()

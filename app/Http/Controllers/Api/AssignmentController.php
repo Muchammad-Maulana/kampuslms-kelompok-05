@@ -15,8 +15,13 @@ class AssignmentController extends Controller
     {
         $this->authorize('viewAny', [Assignment::class, $course]);
 
+        $filters = $request->validate([
+            'status' => ['sometimes', 'in:draft,published'],
+        ]);
+
         $assignments = $course->assignments()
             ->visibleTo($request->user())
+            ->when(isset($filters['status']), fn ($query) => $query->where('status', $filters['status']))
             ->with('creator')
             ->latest('due_at')
             ->paginate(15);
@@ -83,6 +88,53 @@ class AssignmentController extends Controller
         abort_unless($assignment->course_id === $course->id, 404);
         $this->authorize('delete', $assignment);
 
+        $assignment->delete();
+
+        return response()->noContent();
+    }
+
+    public function storeStandalone(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'course_id' => ['required', 'integer', 'exists:courses,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'instructions' => ['required', 'string'],
+            'due_at' => ['required', 'date'],
+            'max_score' => ['sometimes', 'integer', 'between:1,100'],
+            'allow_late' => ['sometimes', 'boolean'],
+            'status' => ['sometimes', 'in:draft,published'],
+        ]);
+        $course = Course::findOrFail($validated['course_id']);
+        $this->authorize('create', [Assignment::class, $course]);
+
+        $assignment = $course->assignments()->create([
+            ...$validated,
+            'created_by' => $request->user()->id,
+        ]);
+
+        return AssignmentResource::make($assignment->load('creator'))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function updateStandalone(Request $request, Assignment $assignment): AssignmentResource
+    {
+        $this->authorize('update', $assignment);
+        $assignment->update($request->validate([
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'instructions' => ['sometimes', 'required', 'string'],
+            'due_at' => ['sometimes', 'required', 'date'],
+            'max_score' => ['sometimes', 'integer', 'between:1,100'],
+            'allow_late' => ['sometimes', 'boolean'],
+            'status' => ['sometimes', 'in:draft,published'],
+        ]));
+
+        return new AssignmentResource($assignment->load('creator'));
+    }
+
+    public function destroyStandalone(Request $request, Assignment $assignment): \Illuminate\Http\Response
+    {
+        $this->authorize('delete', $assignment);
         $assignment->delete();
 
         return response()->noContent();

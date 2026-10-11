@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AssignmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\MaterialController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -27,6 +28,9 @@ Route::prefix('v1')->group(function () {
         Route::delete('/courses/{course}', [CourseController::class, 'destroy'])
             ->name('api.courses.destroy');
 
+        Route::get('/courses/{course}/materials', [MaterialController::class, 'index'])
+            ->name('api.materials.index');
+
         Route::get('/courses/{course}/assignments', [AssignmentController::class, 'index'])
             ->name('api.assignments.index');
         Route::post('/courses/{course}/assignments', [AssignmentController::class, 'store'])
@@ -37,5 +41,12 @@ Route::prefix('v1')->group(function () {
             ->name('api.assignments.update');
         Route::delete('/courses/{course}/assignments/{assignment}', [AssignmentController::class, 'destroy'])
             ->name('api.assignments.destroy');
+
+        Route::post('/assignments', [AssignmentController::class, 'storeStandalone'])
+            ->name('api.assignments.store-standalone');
+        Route::match(['put', 'patch'], '/assignments/{assignment}', [AssignmentController::class, 'updateStandalone'])
+            ->name('api.assignments.update-standalone');
+        Route::delete('/assignments/{assignment}', [AssignmentController::class, 'destroyStandalone'])
+            ->name('api.assignments.destroy-standalone');
     });
 });

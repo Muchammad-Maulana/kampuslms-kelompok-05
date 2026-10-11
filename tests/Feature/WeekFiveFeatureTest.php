@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Course;
 use App\Models\Assignment;
 use App\Models\Material;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -45,6 +46,7 @@ class WeekFiveFeatureTest extends TestCase
         $response->assertOk();
         $response->assertSee($ownCourse->name);
         $response->assertDontSee('Course Dosen Lain');
+        $response->assertSee(route('dosen.mata-kuliah.show', $ownCourse));
     }
 
     public function test_lecturer_cannot_view_another_lecturers_course(): void
@@ -74,6 +76,27 @@ class WeekFiveFeatureTest extends TestCase
 
         $response->assertOk();
         $response->assertSee($course->name);
+        $response->assertSee(route('mahasiswa.mata-kuliah.show', $course));
+    }
+
+    public function test_demo_student_can_open_first_seeded_course_but_not_second(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $student = User::where('email', 'mahasiswa@kampuslms.test')->firstOrFail();
+        $courses = Course::query()->orderBy('id')->take(2)->get();
+
+        $this->assertCount(2, $courses);
+        $this->assertTrue($student->courses()->whereKey($courses[0]->id)->exists());
+        $this->assertFalse($student->courses()->whereKey($courses[1]->id)->exists());
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.show', $courses[0]))
+            ->assertOk();
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.show', $courses[1]))
+            ->assertForbidden();
     }
 
     public function test_lecturer_cannot_view_material_from_another_course(): void
