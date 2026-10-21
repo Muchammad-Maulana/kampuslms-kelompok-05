@@ -44,10 +44,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::resource('mata-kuliah.assignments', App\Http\Controllers\AssignmentController::class)
             ->parameters(['mata-kuliah' => 'course', 'assignments' => 'assignment'])
             ->shallow();
+        Route::get('materials/{material}/download', [App\Http\Controllers\MaterialController::class, 'download'])
+            ->name('materials.download');
         Route::get('mata-kuliah/{course}/materials/{material}', [App\Http\Controllers\MaterialController::class, 'showScoped'])
             ->name('mata-kuliah.materials.scoped-show');
         Route::get('mata-kuliah/{course}/assignments/{assignment}', [App\Http\Controllers\AssignmentController::class, 'showScoped'])
             ->name('mata-kuliah.assignments.scoped-show');
+        Route::get('submissions/{submission}/download', [App\Http\Controllers\SubmissionController::class, 'download'])
+            ->name('submissions.download');
     });
 });
 
@@ -68,10 +72,14 @@ Route::middleware(['auth', 'role:dosen'])->prefix('dosen')->name('dosen.')->grou
         Route::resource('mata-kuliah.assignments', App\Http\Controllers\AssignmentController::class)
             ->parameters(['mata-kuliah' => 'course', 'assignments' => 'assignment'])
             ->shallow();
+        Route::get('materials/{material}/download', [App\Http\Controllers\MaterialController::class, 'download'])
+            ->name('materials.download');
         Route::get('mata-kuliah/{course}/materials/{material}', [App\Http\Controllers\MaterialController::class, 'showScoped'])
             ->name('mata-kuliah.materials.scoped-show');
         Route::get('mata-kuliah/{course}/assignments/{assignment}', [App\Http\Controllers\AssignmentController::class, 'showScoped'])
             ->name('mata-kuliah.assignments.scoped-show');
+        Route::get('submissions/{submission}/download', [App\Http\Controllers\SubmissionController::class, 'download'])
+            ->name('submissions.download');
     });
 });
 
@@ -96,6 +104,10 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
             ->only(['index', 'show'])
             ->parameters(['mata-kuliah' => 'course', 'assignments' => 'assignment'])
             ->shallow();
+        Route::get('materials/{material}/download', [App\Http\Controllers\MaterialController::class, 'download'])
+            ->name('materials.download');
+        Route::get('submissions/{submission}/download', [App\Http\Controllers\SubmissionController::class, 'download'])
+            ->name('submissions.download');
     });
 });
 

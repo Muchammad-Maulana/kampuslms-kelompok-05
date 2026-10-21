@@ -8,6 +8,8 @@ use App\Http\Requests\StoreMaterialRequest;
 use App\Http\Requests\UpdateMaterialRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MaterialController extends Controller
 {
@@ -36,9 +38,17 @@ class MaterialController extends Controller
     {
         Gate::authorize('create', [Material::class, $course]);
 
-        $material = Material::create(array_merge($request->validated(), [
+        $validated = $request->validated();
+        $file = $validated['file'] ?? null;
+        unset($validated['file']);
+
+        $material = Material::create(array_merge($validated, [
             'course_id' => $course->id,
             'uploaded_by' => $request->user()->id,
+            'file_path' => $file?->store('materials/'.$course->id, 'local'),
+            'original_name' => $file?->getClientOriginalName(),
+            'file_size' => $file?->getSize(),
+            'mime_type' => $file?->getMimeType(),
         ]));
 
         return redirect()->route($request->user()->role . '.materials.show', $material)
@@ -56,10 +66,41 @@ class MaterialController extends Controller
     public function update(UpdateMaterialRequest $request, Material $material)
     {
         Gate::authorize('update', $material);
-        $material->update($request->validated());
+        $validated = $request->validated();
+        $file = $validated['file'] ?? null;
+        unset($validated['file']);
+
+        if ($file) {
+            $oldPath = $material->file_path;
+            $validated['file_path'] = $file->store('materials/'.$material->course_id, 'local');
+            $validated['original_name'] = $file->getClientOriginalName();
+            $validated['file_size'] = $file->getSize();
+            $validated['mime_type'] = $file->getMimeType();
+        } elseif (($validated['type'] ?? $material->type) === 'link') {
+            $oldPath = $material->file_path;
+            $validated['file_path'] = null;
+            $validated['original_name'] = null;
+            $validated['file_size'] = null;
+            $validated['mime_type'] = null;
+        } else {
+            $oldPath = null;
+        }
+
+        $material->update($validated);
+        if ($oldPath && $oldPath !== $material->file_path) {
+            Storage::disk('local')->delete($oldPath);
+        }
 
         return redirect()->route($request->user()->role . '.materials.show', $material)
             ->with('success', 'Materi berhasil diperbarui.');
+    }
+
+    public function download(Material $material): StreamedResponse
+    {
+        Gate::authorize('view', $material);
+        abort_unless($material->file_path && Storage::disk('local')->exists($material->file_path), 404);
+
+        return Storage::disk('local')->download($material->file_path, $material->original_name);
     }
 
     public function destroy(Request $request, Material $material)

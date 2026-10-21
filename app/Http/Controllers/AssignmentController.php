@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAssignmentRequest;
 use App\Http\Requests\UpdateAssignmentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Submission;
 
 class AssignmentController extends Controller
 {
@@ -66,6 +67,7 @@ class AssignmentController extends Controller
     {
         Gate::authorize('delete', $assignment);
         $course = $assignment->course;
+        $assignment->submissions()->get()->each->delete();
         $assignment->delete();
 
         return redirect()->route($request->user()->role . '.mata-kuliah.assignments.index', $course)
@@ -76,9 +78,28 @@ class AssignmentController extends Controller
     {
         abort_if($request->user()->role === 'mahasiswa' && $assignment->status !== 'published', 404);
         $this->authorize('view', $assignment);
-        $assignment->load('course', 'creator');
+        $assignment->load('course');
 
-        return view('assignments.show', compact('assignment'));
+        if ($request->user()->role === 'mahasiswa') {
+            $studentSubmission = $assignment->submissions()
+                ->with('grade')
+                ->where('user_id', $request->user()->id)
+                ->first();
+            $canSubmit = $request->user()->can('create', [Submission::class, $assignment]);
+            $students = collect();
+            $submissions = collect();
+        } else {
+            $assignment->course->load('students');
+            $students = $assignment->course->students->keyBy('id');
+            $submissions = $assignment->submissions()
+                ->with(['user', 'grade'])
+                ->get()
+                ->keyBy('user_id');
+            $studentSubmission = null;
+            $canSubmit = false;
+        }
+
+        return view('assignments.show', compact('assignment', 'studentSubmission', 'students', 'submissions', 'canSubmit'));
     }
 
     public function showScoped(Request $request, Course $course, Assignment $assignment)

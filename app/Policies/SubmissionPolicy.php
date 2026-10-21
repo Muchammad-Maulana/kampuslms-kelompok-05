@@ -22,6 +22,7 @@ class SubmissionPolicy
     public function create(User $user, Assignment $assignment): bool
     {
         return $user->role === 'mahasiswa'
+            && $assignment->course->status === 'active'
             && $assignment->status === 'published'
             && $user->courses()->whereKey($assignment->course_id)->exists()
             && ($assignment->allow_late || now()->lessThanOrEqualTo($assignment->due_at));

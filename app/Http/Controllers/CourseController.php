@@ -106,6 +106,11 @@ class CourseController extends Controller
     {
         $this->authorize('delete', $course);
 
+        $course->materials()->get()->each->delete();
+        $course->assignments()->with('submissions')->get()->each(function ($assignment): void {
+            $assignment->submissions->each->delete();
+            $assignment->delete();
+        });
         $course->delete();
 
         return redirect()->route('admin.mata-kuliah.index')->with('success', 'Mata kuliah berhasil dihapus.');

@@ -16,8 +16,11 @@ class CoursePolicy
     {
         return $user->role === 'admin'
             || ($user->role === 'dosen' && $course->lecturer_id === $user->id)
-            || ($user->role === 'mahasiswa' && $user->courses()->whereKey($course->getKey())->exists());
+            || ($user->role === 'mahasiswa'
+                && $course->status === 'active'
+                && $user->courses()->whereKey($course->getKey())->exists());
     }
+
 
     public function create(User $user): bool
     {

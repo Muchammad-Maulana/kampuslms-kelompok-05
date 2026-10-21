@@ -44,6 +44,7 @@ class DatabaseSeeder extends Seeder
             /** @var Course $course */
             CourseFactory::new()->create([
                 'lecturer_id' => $lecturers->random()->id,
+                'status' => 'active',
             ]);
         }
 

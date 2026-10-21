@@ -22,9 +22,20 @@ class ModelPoliciesTest extends TestCase
         $otherLecturer = User::factory()->create(['role' => 'dosen']);
         $student = User::factory()->create(['role' => 'mahasiswa']);
 
-        $course = Course::factory()->create(['lecturer_id' => $lecturer->id]);
-        $otherCourse = Course::factory()->create(['lecturer_id' => $otherLecturer->id]);
+        $course = Course::factory()->create([
+            'lecturer_id' => $lecturer->id,
+            'status' => 'active',
+        ]);
+        $otherCourse = Course::factory()->create([
+            'lecturer_id' => $otherLecturer->id,
+            'status' => 'active',
+        ]);
+        $draftCourse = Course::factory()->create([
+            'lecturer_id' => $otherLecturer->id,
+            'status' => 'draft',
+        ]);
         $course->students()->attach($student);
+        $draftCourse->students()->attach($student);
 
         $material = Material::create([
             'course_id' => $course->id,
@@ -61,7 +72,7 @@ class ModelPoliciesTest extends TestCase
             [$course->id],
             Course::query()->visibleTo($student)->pluck('id')->all()
         );
-        $this->assertCount(2, Course::query()->visibleTo($admin)->get());
+        $this->assertCount(3, Course::query()->visibleTo($admin)->get());
 
         $this->assertSame(
             [$material->id],
@@ -94,7 +105,10 @@ class ModelPoliciesTest extends TestCase
         $student = User::factory()->create(['role' => 'mahasiswa']);
         $otherStudent = User::factory()->create(['role' => 'mahasiswa']);
 
-        $course = Course::factory()->create(['lecturer_id' => $lecturer->id]);
+        $course = Course::factory()->create([
+            'lecturer_id' => $lecturer->id,
+            'status' => 'active',
+        ]);
         $course->students()->attach([$student->id, $otherStudent->id]);
 
         $material = Material::create([
