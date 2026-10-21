@@ -24,6 +24,14 @@ Sebaliknya, file pada `storage/app/private` tidak memiliki tautan publik langsun
 
 **Catatan penting:** lokasi privat mengurangi risiko akses langsung, tetapi tetap harus disertai pemeriksaan otorisasi pada setiap endpoint unduh. Lokasi privat saja tidak cukup.
 
+### Lokasi kode/file
+
+- [config/filesystems.php — konfigurasi disk `local` dan symbolic link publik](../../config/filesystems.php#L33)
+- [SubmissionController.php — pengecekan izin dan pengiriman submission](../../app/Http/Controllers/SubmissionController.php#L86)
+- [MaterialController.php — pengecekan izin dan pengiriman materi](../../app/Http/Controllers/MaterialController.php#L98)
+- Direktori penyimpanan: [storage/app/private/](../../storage/app/private/) (privat) dan [storage/app/public/](../../storage/app/public/) (dipetakan ke web publik).
+- [WeekNineFileHandlingTest.php — test penyimpanan privat dan unduh dengan otorisasi](../../tests/Feature/WeekNineFileHandlingTest.php)
+
 ### Kalimat siap presentasi
 
 > “Saya menyimpan submission di disk `local` yang mengarah ke `storage/app/private`, bukan di `storage/app/public`. Dengan begitu file tidak bisa diakses langsung lewat URL publik. Saat file diminta, controller memeriksa Policy terlebih dahulu, baru mengirimkan file jika pengguna memang berhak.”
@@ -47,6 +55,12 @@ Cara ini membantu mencegah:
 3. **Penggunaan nama pengguna sebagai path:** nama file dari pengguna tidak langsung dijadikan bagian nama file fisik.
 
 Nama acak bukan pengganti otorisasi. Jika endpoint unduh tidak memeriksa izin, file masih dapat terekspos melalui kelemahan lain. Karena itu, endpoint tetap memeriksa `SubmissionPolicy`.
+
+### Lokasi kode/file
+
+- [SubmissionController.php — `store()` menyimpan file dengan `store()` dan menyimpan nama asli sebagai metadata](../../app/Http/Controllers/SubmissionController.php#L16)
+- [Submission.php — kolom `file_path`, `original_name`, dan `file_size`](../../app/Models/Submission.php#L13)
+- [WeekNineFileHandlingTest.php — test nama path acak dan pengumpulan ulang](../../tests/Feature/WeekNineFileHandlingTest.php#L16)
 
 ### Kalimat siap presentasi
 
@@ -74,6 +88,12 @@ Pada submission, controller memakai:
 ```
 
 Artinya file wajib diunggah, harus berupa file, tipe yang dikenali harus termasuk PDF/DOC/DOCX, dan ukurannya tidak boleh melewati batas.
+
+### Lokasi kode/file
+
+- [SubmissionController.php — rule `mimes` untuk upload submission](../../app/Http/Controllers/SubmissionController.php#L22)
+- [StoreMaterialRequest.php — rule `mimes` untuk upload materi](../../app/Http/Requests/StoreMaterialRequest.php#L23)
+- [WeekNineFileHandlingTest.php — test menolak tipe file dan ukuran yang tidak valid](../../tests/Feature/WeekNineFileHandlingTest.php#L126)
 
 ### Batasan yang perlu dijelaskan
 
@@ -103,6 +123,14 @@ Karena itu, batas di server harus disetel agar mendukung batas aplikasi. Bila ba
 
 **Contoh:** jika batas Laravel 5 MB tetapi `upload_max_filesize` di PHP hanya 2 MB, file berukuran 3 MB ditolak di tingkat PHP. Mengubah validasi Laravel saja tidak akan menyelesaikan masalah tersebut.
 
+### Lokasi kode/file
+
+- [SubmissionController.php — batas aplikasi `max:5120`](../../app/Http/Controllers/SubmissionController.php#L22)
+- [StoreMaterialRequest.php — contoh batas materi `max:20480`](../../app/Http/Requests/StoreMaterialRequest.php#L23)
+- [docs/keamanan.md — catatan keamanan dan konfigurasi terkait upload](../keamanan.md)
+
+> Catatan: `upload_max_filesize` dan `post_max_size` merupakan konfigurasi PHP di lingkungan server, bukan file konfigurasi Laravel pada repository ini. Sesuaikan nilainya pada `php.ini` atau konfigurasi hosting/server yang digunakan.
+
 ### Kalimat siap presentasi
 
 > “`max:5120` berarti 5120 KB, kira-kira 5 MiB atau biasa disebut 5 MB. Namun, upload juga dibatasi PHP dan web server. Jika `upload_max_filesize`, `post_max_size`, atau batas proxy lebih kecil, request bisa ditolak sebelum mencapai validasi Laravel.”
@@ -131,6 +159,13 @@ Pemeriksaan tersebut memanggil `SubmissionPolicy::view`. Mahasiswa hanya boleh m
 
 Mengganti ID pada URL tidak mengubah pemilik submission dan tidak melewati pemeriksaan Policy. Pengguna yang tidak berhak akan ditolak.
 
+### Lokasi kode/file
+
+- [routes/web.php — route unduh submission](../../routes/web.php#L53)
+- [SubmissionController.php — `download()` memanggil Gate sebelum mengirim file](../../app/Http/Controllers/SubmissionController.php#L86)
+- [SubmissionPolicy.php — aturan pemilik submission, dosen pengampu, dan admin](../../app/Policies/SubmissionPolicy.php#L16)
+- [WeekNineFileHandlingTest.php — test bahwa mahasiswa lain ditolak saat mengunduh](../../tests/Feature/WeekNineFileHandlingTest.php#L41)
+
 ### Kalimat siap presentasi
 
 > “Perlindungannya ada di `SubmissionController::download`, yang memanggil `Gate::authorize('view', $submission)`. Policy kemudian hanya mengizinkan pemilik submission, dosen pengampu course, atau admin. Jadi, kalau mahasiswa mengganti ID pada URL menjadi ID milik mahasiswa lain, pemeriksaan tetap menggunakan identitas pengguna yang sedang login dan aksesnya ditolak.”
@@ -154,6 +189,13 @@ Saat submission dibuat atau file submission diperbarui, controller mengambil wak
 Jika waktu pengumpulan melewati deadline, `is_late` bernilai `true`; jika tidak, nilainya `false`. Dengan cara ini, pengguna tidak dapat sekadar mengirim `is_late=false` dari browser untuk menyamarkan keterlambatan.
 
 Izin mengumpulkan juga diperiksa di server melalui `SubmissionPolicy::create`. Jika deadline sudah lewat dan `allow_late` bernilai `false`, pengumpulan ditolak. Jika keterlambatan diizinkan, submission dapat diterima dan status terlambat tetap dicatat sesuai waktu pengumpulan.
+
+### Lokasi kode/file
+
+- [SubmissionController.php — menghitung `is_late` dari waktu server saat mengumpulkan atau memperbarui file](../../app/Http/Controllers/SubmissionController.php#L36)
+- [SubmissionPolicy.php — memeriksa deadline dan `allow_late`](../../app/Policies/SubmissionPolicy.php#L22)
+- [Assignment.php — field dan cast untuk `due_at` serta `allow_late`](../../app/Models/Assignment.php#L33)
+- [WeekNineFileHandlingTest.php — test status terlambat dihitung server dan aturan deadline](../../tests/Feature/WeekNineFileHandlingTest.php#L83)
 
 ### Kalimat siap presentasi
 
