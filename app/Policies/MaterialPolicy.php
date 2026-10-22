@@ -18,6 +18,12 @@ class MaterialPolicy
         return $user->can('view', $material->course);
     }
 
+    public function download(User $user, Material $material): bool
+    {
+        return $user->role === 'mahasiswa'
+            && $user->courses()->whereKey($material->course_id)->exists();
+    }
+
     public function create(User $user, Course $course): bool
     {
         return $this->canManageCourse($user, $course);

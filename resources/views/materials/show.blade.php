@@ -20,5 +20,8 @@
                 <div><dt class="text-slate-500">Nama berkas</dt><dd class="font-semibold">{{ $material->original_name }}</dd></div>
             @endif
         </dl>
+        @if ($material->type === 'file' && request()->routeIs('mahasiswa.*'))
+            <a href="{{ route('mahasiswa.mata-kuliah.materials.download', [$material->course, $material]) }}" class="mt-5 inline-flex rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white">Unduh materi</a>
+        @endif
     </div>
 </x-layout>

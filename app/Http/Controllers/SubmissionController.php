@@ -36,6 +36,7 @@ class SubmissionController extends Controller
             $request->user()->id.'-'.time().'-'.$file->getClientOriginalName(),
             'local'
         );
+        $submittedAt = now();
 
         $submission = $assignment->submissions()->updateOrCreate(
             ['user_id' => $request->user()->id],
@@ -44,8 +45,8 @@ class SubmissionController extends Controller
                 'original_name' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
                 'note' => $validated['note'] ?? null,
-                'submitted_at' => now(),
-                'is_late' => now()->greaterThan($assignment->due_at),
+                'submitted_at' => $submittedAt,
+                'is_late' => $submittedAt->greaterThan($assignment->due_at),
             ]
         );
 
@@ -77,7 +78,7 @@ class SubmissionController extends Controller
             $submission->original_name = $file->getClientOriginalName();
             $submission->file_size = $file->getSize();
             $submission->submitted_at = now();
-            $submission->is_late = now()->greaterThan($assignment->due_at);
+            $submission->is_late = $submission->submitted_at->greaterThan($assignment->due_at);
         }
 
         $submission->note = $validated['note'] ?? $submission->note;

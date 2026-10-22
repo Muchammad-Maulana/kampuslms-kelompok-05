@@ -95,6 +95,8 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
         ->name('mata-kuliah.assignments.submissions.update');
 
     Route::scopeBindings()->group(function () {
+        Route::get('mata-kuliah/{course}/materials/{material}/download', [App\Http\Controllers\MaterialController::class, 'download'])
+            ->name('mata-kuliah.materials.download');
         Route::get('mata-kuliah/{course}/materials/{material}', [App\Http\Controllers\MaterialController::class, 'showScoped'])
             ->name('mata-kuliah.materials.scoped-show');
         Route::get('mata-kuliah/{course}/assignments/{assignment}', [App\Http\Controllers\AssignmentController::class, 'showScoped'])

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreMaterialRequest;
 use App\Http\Requests\UpdateMaterialRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class MaterialController extends Controller
 {
@@ -36,7 +37,23 @@ class MaterialController extends Controller
     {
         Gate::authorize('create', [Material::class, $course]);
 
-        $material = Material::create(array_merge($request->validated(), [
+        $validated = $request->validated();
+        $file = $validated['file'] ?? null;
+        unset($validated['file']);
+
+        if ($file) {
+            $path = $file->store('materials/'.$course->id, 'local');
+            abort_unless($path, 500);
+
+            $validated = array_merge($validated, [
+                'file_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+            ]);
+        }
+
+        $material = Material::create(array_merge($validated, [
             'course_id' => $course->id,
             'uploaded_by' => $request->user()->id,
         ]));
@@ -56,7 +73,25 @@ class MaterialController extends Controller
     public function update(UpdateMaterialRequest $request, Material $material)
     {
         Gate::authorize('update', $material);
-        $material->update($request->validated());
+        $validated = $request->validated();
+        $file = $validated['file'] ?? null;
+        unset($validated['file']);
+
+        if ($file) {
+            $path = $file->store('materials/'.$material->course_id, 'local');
+            abort_unless($path, 500);
+
+            $validated = array_merge($validated, [
+                'type' => 'file',
+                'file_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'external_url' => null,
+            ]);
+        }
+
+        $material->update($validated);
 
         return redirect()->route($request->user()->role . '.materials.show', $material)
             ->with('success', 'Materi berhasil diperbarui.');
@@ -85,5 +120,17 @@ class MaterialController extends Controller
         abort_unless($material->course_id === $course->id, 404);
 
         return $this->show($request, $material);
+    }
+
+    public function download(Course $course, Material $material)
+    {
+        abort_unless($material->course_id === $course->id, 404);
+        $this->authorize('download', $material);
+        abort_unless($material->type === 'file' && $material->file_path, 404);
+
+        $disk = Storage::disk('local');
+        abort_unless($disk->exists($material->file_path), 404);
+
+        return $disk->download($material->file_path, $material->original_name);
     }
 }
