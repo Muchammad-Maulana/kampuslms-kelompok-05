@@ -6,11 +6,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Course extends Model
 {
     use HasFactory;
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return match ($user->role) {
+            'admin' => $query,
+            'dosen' => $query->where('lecturer_id', $user->id),
+            'mahasiswa' => $query->whereHas('students', fn (Builder $students) => $students->whereKey($user->id)),
+            default => $query->whereRaw('1 = 0'),
+        };
+    }
 
     // Field yang boleh diisi saat course dibuat atau diperbarui.
     protected $fillable = [

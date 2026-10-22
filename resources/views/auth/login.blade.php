@@ -41,6 +41,8 @@
             <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Masuk</button>
         </form>
 
+        <a href="{{ route('password.request') }}" class="mt-4 inline-block text-sm font-semibold text-blue-700">Lupa kata sandi?</a>
+
         <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
             <p class="font-semibold text-slate-800">Demo akun</p>
             <ul class="mt-2 list-disc space-y-1 pl-5">

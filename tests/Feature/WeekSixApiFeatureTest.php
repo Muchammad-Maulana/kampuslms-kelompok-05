@@ -310,4 +310,82 @@ class WeekSixApiFeatureTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    public function test_material_api_requires_course_access_and_returns_a_resource_collection(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $otherLecturer = User::factory()->create(['role' => 'dosen']);
+        $course = Course::factory()->create(['lecturer_id' => $lecturer->id]);
+        $otherCourse = Course::factory()->create(['lecturer_id' => $otherLecturer->id]);
+        $course->students()->attach($student);
+        $material = \App\Models\Material::create([
+            'course_id' => $course->id,
+            'uploaded_by' => $lecturer->id,
+            'title' => 'Materi API',
+            'type' => 'link',
+            'external_url' => 'https://example.test/material-api',
+        ]);
+
+        $this->withToken($student->createToken('test')->plainTextToken)
+            ->getJson('/api/v1/courses/'.$course->id.'/materials')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $material->id)
+            ->assertJsonPath('data.0.title', 'Materi API');
+
+        $this->withToken($student->createToken('test')->plainTextToken)
+            ->getJson('/api/v1/courses/'.$otherCourse->id.'/materials')
+            ->assertForbidden();
+    }
+
+    public function test_assignment_api_supports_status_filter_and_contract_mutation_paths(): void
+    {
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+        $course = Course::factory()->create(['lecturer_id' => $lecturer->id]);
+        $course->students()->attach($student);
+        $published = AssignmentFactory::new()->create([
+            'course_id' => $course->id,
+            'created_by' => $lecturer->id,
+            'status' => 'published',
+        ]);
+        AssignmentFactory::new()->create([
+            'course_id' => $course->id,
+            'created_by' => $lecturer->id,
+            'status' => 'draft',
+        ]);
+
+        $studentToken = $student->createToken('student')->plainTextToken;
+        $this->withToken($studentToken)
+            ->getJson('/api/v1/courses/'.$course->id.'/assignments?status=published')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $published->id);
+
+        $lecturerToken = $lecturer->createToken('lecturer')->plainTextToken;
+        $this->assertSame('dosen', $lecturer->fresh()->role);
+        $this->assertTrue($lecturer->can('create', [Assignment::class, $course]));
+        $this->app['auth']->forgetGuards();
+        $this->withToken($lecturerToken)
+            ->getJson('/api/v1/me')
+            ->assertOk()
+            ->assertJsonPath('data.role', 'dosen');
+        $created = $this->withToken($lecturerToken)->postJson('/api/v1/assignments', [
+            'course_id' => $course->id,
+            'title' => 'Assignment via contract path',
+            'instructions' => 'Contract endpoint test.',
+            'due_at' => now()->addDay()->toIso8601String(),
+        ]);
+        $created->assertCreated();
+        $assignmentId = $created->json('data.id');
+
+        $this->withToken($lecturerToken)
+            ->patchJson('/api/v1/assignments/'.$assignmentId, ['title' => 'Updated contract assignment'])
+            ->assertOk()
+            ->assertJsonPath('data.title', 'Updated contract assignment');
+
+        $this->withToken($lecturerToken)
+            ->deleteJson('/api/v1/assignments/'.$assignmentId)
+            ->assertNoContent();
+    }
 }
