@@ -21,40 +21,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Admin Kampus',
-            'email' => 'admin@kampuslms.test',
-            'password' => 'password',
-            'role' => 'admin',
-        ]);
+        $this->call(DemoAccountSeeder::class);
 
         User::factory(2)->create([
             'role' => 'dosen',
         ]);
 
-        User::factory()->create([
-            'name' => 'Dosen Demo',
-            'email' => 'dosen@kampuslms.test',
-            'password' => 'password',
-            'role' => 'dosen',
-        ]);
-
         User::factory(29)->create([
-            'role' => 'student',
-        ]);
-
-        User::factory()->create([
-            'name' => 'Mahasiswa Demo',
-            'email' => 'mahasiswa@kampuslms.test',
-            'password' => 'password',
-            'role' => 'student',
+            'role' => 'mahasiswa',
         ]);
 
         $lecturers = User::query()
             ->where('role', 'dosen')
             ->get();
         $students = User::query()
-            ->where('role', 'student')
+            ->where('role', 'mahasiswa')
             ->get();
 
         for ($courseNumber = 0; $courseNumber < 5; $courseNumber++) {
@@ -67,9 +48,9 @@ class DatabaseSeeder extends Seeder
                 $students->random(16)->modelKeys()
             );
 
-            AssignmentFactory::new()->count(3)->create([
-                'course_id' => $course->id,
-            ]);
+            AssignmentFactory::new()->overdue()->create(['course_id' => $course->id]);
+            AssignmentFactory::new()->active()->create(['course_id' => $course->id]);
+            AssignmentFactory::new()->draft()->create(['course_id' => $course->id]);
         }
 
         $submissionPairs = Course::query()
@@ -101,8 +82,10 @@ class DatabaseSeeder extends Seeder
         foreach ($submissionsToGrade as $submission) {
             Grade::create([
                 'submission_id' => $submission->id,
+                'graded_by' => $submission->assignment->course->lecturer_id,
                 'score' => fake()->numberBetween(0, 100),
                 'feedback' => fake()->sentence(),
+                'graded_at' => now(),
             ]);
         }
     }

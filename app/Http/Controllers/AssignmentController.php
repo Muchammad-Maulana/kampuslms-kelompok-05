@@ -4,87 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Models\Assignment;
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AssignmentController extends Controller
 {
-    // Placeholder responses keep the resource routes callable until view and persistence logic are added.
-    public function index(Course $course): string
+    public function index(Request $request, Course $course)
     {
-        $this->assertCanReadCourse($course);
+        $this->authorizeCourseRead($request->user(), $course);
 
-        return "Daftar tugas untuk mata kuliah {$course->id}.";
+        $assignments = $course->assignments()
+            ->when($request->user()->role === 'mahasiswa', fn ($query) => $query->where('status', 'published'))
+            ->with('creator')
+            ->latest()
+            ->paginate(15);
+
+        return view('assignments.index', compact('course', 'assignments'));
     }
 
-    public function create(Course $course): string
+    public function show(Request $request, Assignment $assignment)
     {
-        $this->assertCanManageCourse($course);
+        $this->authorizeCourseRead($request->user(), $assignment->course);
+        abort_if($request->user()->role === 'mahasiswa' && $assignment->status !== 'published', 404);
+        $assignment->load('course', 'creator');
 
-        return "Form tugas untuk mata kuliah {$course->id}.";
+        return view('assignments.show', compact('assignment'));
     }
 
-    public function store(Request $request, Course $course): string
+    public function showScoped(Request $request, Course $course, Assignment $assignment)
     {
-        $this->assertCanManageCourse($course);
+        abort_unless($assignment->course_id === $course->id, 404);
 
-        return "Penyimpanan tugas untuk mata kuliah {$course->id} belum diimplementasikan.";
+        return $this->show($request, $assignment);
     }
 
-    public function show(Assignment $assignment): string
+    private function authorizeCourseRead(User $user, Course $course): void
     {
-        $this->assertCanReadCourse($assignment->course);
+        $allowed = match ($user->role) {
+            'admin' => true,
+            'dosen' => $course->lecturer_id === $user->id,
+            'mahasiswa' => $user->courses()->whereKey($course->getKey())->exists(),
+            default => false,
+        };
 
-        return "Detail tugas {$assignment->id}.";
-    }
-
-    public function showInCourse(Course $course, Assignment $assignment): string
-    {
-        abort_unless((int) $assignment->course_id === (int) $course->id, 404);
-        $this->assertCanReadCourse($course);
-
-        return "Tugas {$assignment->id} pada mata kuliah {$course->id}.";
-    }
-
-    public function edit(Assignment $assignment): string
-    {
-        $this->assertCanManageCourse($assignment->course);
-
-        return "Form edit tugas {$assignment->id}.";
-    }
-
-    public function update(Request $request, Assignment $assignment): string
-    {
-        $this->assertCanManageCourse($assignment->course);
-
-        return "Pembaruan tugas {$assignment->id} belum diimplementasikan.";
-    }
-
-    public function destroy(Assignment $assignment): string
-    {
-        $this->assertCanManageCourse($assignment->course);
-
-        return "Penghapusan tugas {$assignment->id} belum diimplementasikan.";
-    }
-
-    // Temporary ownership checks; move these rules into policies in week 7.
-    private function assertCanReadCourse(Course $course): void
-    {
-        $user = auth()->user();
-
-        abort_unless($user && (
-            $user->role === 'admin'
-            || ($user->role === 'dosen' && (int) $course->lecturer_id === (int) $user->id)
-            || ($user->role === 'student' && $course->students()->where('users.id', $user->id)->exists())
-        ), 403);
-    }
-
-    private function assertCanManageCourse(Course $course): void
-    {
-        $user = auth()->user();
-
-        abort_unless($user && (
-            $user->role === 'admin'
-            || ($user->role === 'dosen' && (int) $course->lecturer_id === (int) $user->id)
-        ), 403);
+        abort_unless($allowed, 403);
     }
 }

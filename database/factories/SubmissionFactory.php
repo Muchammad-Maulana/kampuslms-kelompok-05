@@ -26,9 +26,12 @@ class SubmissionFactory extends Factory
         return [
             'assignment_id' => $assignment->id,
             'user_id' => $assignment->course->students->random()->id,
-            'content' => fake()->paragraphs(2, true),
-            'file_path' => null,
+            'file_path' => 'submissions/demo.pdf',
+            'original_name' => 'demo.pdf',
+            'file_size' => fake()->numberBetween(1000, 500000),
+            'note' => fake()->optional()->sentence(),
             'submitted_at' => fake()->dateTimeBetween('-1 month', 'now'),
+            'is_late' => false,
         ];
     }
 }

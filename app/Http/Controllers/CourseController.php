@@ -5,38 +5,51 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    // Menampilkan daftar seluruh mata kuliah.
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('search', ''));
-        $allowedStatuses = ['draft', 'active', 'archived'];
-        $status = $request->query('status', '');
-        $status = in_array($status, $allowedStatuses, true) ? $status : '';
+        $user = $request->user();
+        $query = match ($user->role) {
+            'admin' => Course::query(),
+            'dosen' => $user->taughtCourses(),
+            'mahasiswa' => $user->courses(),
+            default => abort(403),
+        };
+        $query->with('lecturer');
 
-        $courses = Course::with('lecturer')
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('code', 'like', "%{$search}%")
-                        ->orWhere('name', 'like', "%{$search}%");
-                });
-            })
-            ->when($status !== '', function ($query) use ($status) {
-                $query->where('status', $status);
-            })
-            ->orderBy('name')
-            ->paginate(15)
-            ->withQueryString();
+        if ($request->filled('q')) {
+            $keyword = trim($request->input('q'));
 
-        return view('courses.index', compact('courses', 'search', 'status'));
+            $query->where(function ($courseQuery) use ($keyword) {
+                $courseQuery->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('code', 'like', "%{$keyword}%")
+                    ->orWhere('description', 'like', "%{$keyword}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $totalSks = (clone $query)->sum('courses.sks');
+        $courses = $query->latest('courses.created_at')->paginate(10)->withQueryString();
+        $routePrefix = match ($user->role) {
+            'admin' => 'admin.mata-kuliah',
+            'dosen' => 'dosen.mata-kuliah',
+            'mahasiswa' => 'mahasiswa.mata-kuliah',
+        };
+        $canManage = in_array($user->role, ['admin', 'dosen'], true);
+
+        return view('courses.index', compact('courses', 'routePrefix', 'canManage', 'totalSks'));
     }
 
     public function create()
     {
-        $lecturers = \App\Models\User::where('role', 'dosen')->get();
+        $lecturers = User::where('role', 'dosen')->orderBy('name')->get();
 
         return view('courses.create', compact('lecturers'));
     }
@@ -47,53 +60,57 @@ class CourseController extends Controller
 
         Course::create($validated);
 
-        return redirect()
-            ->route('dosen.mata-kuliah.index')
-            ->with('success', 'Mata kuliah berhasil ditambahkan.');
+        return redirect()->route($request->user()->role . '.mata-kuliah.index')->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
 
-    public function apiStore(StoreCourseRequest $request)
+    public function show(Request $request, Course $course)
     {
-        $validated = $request->validated();
+        $user = $request->user();
+        $canView = match ($user->role) {
+            'admin' => true,
+            'dosen' => $course->lecturer_id === $user->id,
+            'mahasiswa' => $user->courses()->whereKey($course->getKey())->exists(),
+            default => false,
+        };
 
-        $course = Course::create($validated);
+        abort_unless($canView, 403);
 
-        return response()->json($course, 201);
-    }
+        $course->load('lecturer', 'materials');
+        $course->load(['assignments' => function ($query) use ($user): void {
+            if ($user->role === 'mahasiswa') {
+                $query->where('status', 'published');
+            }
+        }]);
+        $routePrefix = match ($user->role) {
+            'admin' => 'admin.mata-kuliah',
+            'dosen' => 'dosen.mata-kuliah',
+            'mahasiswa' => 'mahasiswa.mata-kuliah',
+        };
+        $canManage = $user->role === 'admin' || ($user->role === 'dosen' && $course->lecturer_id === $user->id);
 
-    public function show(Course $course)
-    {
-        $course->load('lecturer');
-
-        return view('courses.show', compact('course'));
+        return view('courses.show', compact('course', 'routePrefix', 'canManage'));
     }
 
     public function edit(Course $course)
     {
-        $course->load('lecturer');
-
-        $lecturers = \App\Models\User::where('role', 'dosen')->get();
+        $lecturers = User::where('role', 'dosen')->orderBy('name')->get();
 
         return view('courses.edit', compact('course', 'lecturers'));
     }
-    
+
     public function update(UpdateCourseRequest $request, Course $course)
     {
         $validated = $request->validated();
 
         $course->update($validated);
 
-        return redirect()
-            ->route('dosen.mata-kuliah.show', $course)
-            ->with('success', 'Mata kuliah berhasil diperbarui.');
+        return redirect()->route(auth()->user()->role . '.mata-kuliah.show', $course)->with('success', 'Mata kuliah berhasil diperbarui.');
     }
 
     public function destroy(Course $course)
     {
         $course->delete();
 
-        return redirect()
-            ->route('dosen.mata-kuliah.index')
-            ->with('success', 'Mata kuliah berhasil dihapus.');
+        return redirect()->route(auth()->user()->role . '.mata-kuliah.index')->with('success', 'Mata kuliah berhasil dihapus.');
     }
 }

@@ -4,87 +4,44 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Material;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class MaterialController extends Controller
 {
-    // Placeholder responses keep the resource routes callable until view and persistence logic are added.
-    public function index(Course $course): string
+    public function index(Request $request, Course $course)
     {
-        $this->assertCanReadCourse($course);
+        $this->authorizeCourseRead($request->user(), $course);
 
-        return "Daftar materi untuk mata kuliah {$course->id}.";
+        $materials = $course->materials()->with('uploader')->latest()->paginate(15);
+
+        return view('materials.index', compact('course', 'materials'));
     }
 
-    public function create(Course $course): string
+    public function show(Request $request, Material $material)
     {
-        $this->assertCanManageCourse($course);
+        $this->authorizeCourseRead($request->user(), $material->course);
+        $material->load('course', 'uploader');
 
-        return "Form materi untuk mata kuliah {$course->id}.";
+        return view('materials.show', compact('material'));
     }
 
-    public function store(Request $request, Course $course): string
+    public function showScoped(Request $request, Course $course, Material $material)
     {
-        $this->assertCanManageCourse($course);
+        abort_unless($material->course_id === $course->id, 404);
 
-        return "Penyimpanan materi untuk mata kuliah {$course->id} belum diimplementasikan.";
+        return $this->show($request, $material);
     }
 
-    public function show(Material $material): string
+    private function authorizeCourseRead(User $user, Course $course): void
     {
-        $this->assertCanReadCourse($material->course);
+        $allowed = match ($user->role) {
+            'admin' => true,
+            'dosen' => $course->lecturer_id === $user->id,
+            'mahasiswa' => $user->courses()->whereKey($course->getKey())->exists(),
+            default => false,
+        };
 
-        return "Detail materi {$material->id}.";
-    }
-
-    public function showInCourse(Course $course, Material $material): string
-    {
-        abort_unless((int) $material->course_id === (int) $course->id, 404);
-        $this->assertCanReadCourse($course);
-
-        return "Materi {$material->id} pada mata kuliah {$course->id}.";
-    }
-
-    public function edit(Material $material): string
-    {
-        $this->assertCanManageCourse($material->course);
-
-        return "Form edit materi {$material->id}.";
-    }
-
-    public function update(Request $request, Material $material): string
-    {
-        $this->assertCanManageCourse($material->course);
-
-        return "Pembaruan materi {$material->id} belum diimplementasikan.";
-    }
-
-    public function destroy(Material $material): string
-    {
-        $this->assertCanManageCourse($material->course);
-
-        return "Penghapusan materi {$material->id} belum diimplementasikan.";
-    }
-
-    // Temporary ownership checks; move these rules into policies in week 7.
-    private function assertCanReadCourse(Course $course): void
-    {
-        $user = auth()->user();
-
-        abort_unless($user && (
-            $user->role === 'admin'
-            || ($user->role === 'dosen' && (int) $course->lecturer_id === (int) $user->id)
-            || ($user->role === 'student' && $course->students()->where('users.id', $user->id)->exists())
-        ), 403);
-    }
-
-    private function assertCanManageCourse(Course $course): void
-    {
-        $user = auth()->user();
-
-        abort_unless($user && (
-            $user->role === 'admin'
-            || ($user->role === 'dosen' && (int) $course->lecturer_id === (int) $user->id)
-        ), 403);
+        abort_unless($allowed, 403);
     }
 }

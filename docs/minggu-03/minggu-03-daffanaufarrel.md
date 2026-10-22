@@ -1,7 +1,6 @@
 # Catatan Minggu 3
 Nama : Muhammad Daffa Naufarrel Putranada\
-NIM : 10241045\
-Kelas : A
+Nim : 10241039
 
 ## 3.3 Read → Break → Fix → Build
 
@@ -16,33 +15,25 @@ Sebelum menyentuh kode, kerjakan bersama kelompok:
 
 ### Jawaban
 
-1. ~
-2. 
-| Foreign Key | `onDelete` | Alasan |
-|---|---|---|
-| `courses.lecturer_id` | `restrictOnDelete` | Dosen adalah entitas independen. Course + seluruh material/assignment/submission/grade di dalamnya terlalu berharga untuk hilang konteks pengampu begitu saja — harus dipindah tangan dulu secara sadar oleh admin |
-| `course_user.course_id` | `cascadeOnDelete` | Baris pivot ini cuma "catatan keanggotaan", tidak berarti apa-apa kalau course-nya sudah tidak ada |
-| `course_user.user_id` | `cascadeOnDelete` | Sama — catatan keanggotaan tidak berarti apa-apa kalau usernya sudah tidak ada |
-| `materials.course_id` | `cascadeOnDelete` | Materi adalah bagian dari course, tidak berdiri sendiri. Course hilang → materinya memang seharusnya ikut hilang |
-| `assignments.course_id` | `cascadeOnDelete` | Sama seperti materi — tugas adalah bagian dari course |
-| `submissions.assignment_id` | `cascadeOnDelete` | Submission adalah jawaban atas assignment tertentu; tanpa assignment-nya, submission itu tidak bermakna |
-| `submissions.user_id` | `restrictOnDelete` | Mahasiswa entitas independen. Riwayat pengumpulan tugas adalah data akademik yang harus sengaja ditangani (dihapus/diarsipkan) kalau memang mau hapus user, bukan otomatis ikut lenyap begitu saja |
-| `grades.submission_id` | `cascadeOnDelete` | Nilai tidak berarti apa-apa tanpa submission yang dinilai |
+1. ERD:
 
-3. Yang terjadi yaitu penghapusan gagal. Database melempar `QueryException` (`FOREIGN KEY constraint failed`), karena `lecturer_id` memakai `restrictOnDelete()`. Mata kuliahnya tidak ikut terhapus, dan dosennya juga tidak jadi terhapus.
+```text
+   User (dosen) 1 ---- banyak Course
+   Course 1 ---- banyak Material
+   Course 1 ---- banyak Assignment
+   User (mahasiswa) banyak ---- banyak Course
+   Assignment 1 ---- banyak Submission
+   User 1 ---- banyak Submission
+   Submission 1 ---- 1 Grade
+   ```
 
-Kenapa dirancang begitu:
+2. - `courses.lecturer_id` memakai `restrictOnDelete()` supaya dosen yang masih mengampu course tidak dapat dihapus sembarangan.
+   - `course_user.course_id` dan `course_user.user_id` memakai `cascadeOnDelete()` karena data pendaftaran tidak berguna jika course atau user induknya dihapus.
+   - `materials.course_id` dan `assignments.course_id` memakai `cascadeOnDelete()` karena materi dan tugas hanya bermakna dalam course tertentu.
+   - `submissions.assignment_id` memakai `cascadeOnDelete()` karena submission tidak berguna tanpa tugasnya.
+   - `submissions.user_id` memakai `restrictOnDelete()` supaya bukti pengumpulan mahasiswa tidak hilang saat user dihapus.
+   - `grades.submission_id` memakai `cascadeOnDelete()` karena nilai tidak berguna tanpa submission.
 
-Kalau dosen boleh dihapus begitu saja, ada dua pilihan buruk:
+3. Jika dosen masih digunakan course, penghapusan ditolak agar `lecturer_id` tetap valid dan data tidak ikut terhapus.
 
-1. Course-nya ikut terhapus (cascade) → semua materi, tugas, submission, dan nilai mahasiswa yang sudah dikerjakan ikut lenyap, padahal tidak ada hubungannya dengan siapa dosennya.
-2. Course-nya dibiarkan tanpa dosen (`lecturer_id` jadi null) → butuh kolom nullable dan logika tambahan untuk menangani "course tanpa pengampu", rawan terlewat di banyak tempat (laporan, tampilan, dsb).
-
-Pilihan desainnya: paksa admin mengambil keputusan eksplisit — pindahkan dulu pengampu ke dosen lain (update `lecturer_id`), baru boleh hapus dosen lama. Database berperan sebagai penjaga yang mencegah kehilangan data secara tidak sengaja.
-
-4. Relasi antara `Submission` dan `Grade` bersifat **one-to-one**: satu submission (satu kali pengumpulan tugas) seharusnya hanya punya satu nilai.
-
-- Kalau cuma index biasa (non-unique): tidak ada yang mencegah dua baris `grades` merujuk ke `submission_id` yang sama. Satu submission bisa saja tercatat punya dua nilai berbeda, menjadi ambigu, nilai mana yang dipakai.
-- Dengan `unique('submission_id')`: database menjamin maksimal satu baris grade per submission. Percobaan insert nilai kedua untuk submission yang sama akan langsung ditolak database, bukan tersimpan sebagai data ganda yang membingungkan.
-
-Constraint ini juga yang membuat relasi Eloquent `Submission::grade()` bisa didefinisikan sebagai `hasOne()` (bukan `hasMany()`) dengan percaya diri, karena dijamin oleh database, bukan sekadar asumsi di level aplikasi
+4. `grades.submission_id` dibuat unique agar satu submission hanya memiliki satu grade dan mencegah grade ganda.

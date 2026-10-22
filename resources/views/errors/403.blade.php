@@ -1,28 +1,17 @@
-<x-layout title="403 - Akses Ditolak">
-    <div class="min-h-[70vh] flex items-center justify-center px-4 py-12">
-        <section class="w-full max-w-xl text-center">
-            <p class="text-sm font-semibold uppercase tracking-widest text-blue-700">
-                Akses halaman
-            </p>
-
-            <p class="mt-4 text-8xl font-extrabold leading-none text-slate-900">
-                403
-            </p>
-
-            <h1 class="mt-5 text-2xl font-bold text-slate-900">
-                Akses ditolak
-            </h1>
-
-            <p class="mx-auto mt-3 max-w-md text-slate-600">
-                Akun Anda tidak memiliki izin untuk membuka halaman ini. Jika Anda merasa seharusnya memiliki akses, hubungi administrator.
-            </p>
-
-            <a
-                href="{{ route('dashboard') }}"
-                class="mt-8 inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-                Kembali ke dashboard
-            </a>
-        </section>
-    </div>
-</x-layout>
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>403 - Akses Ditolak</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="flex min-h-screen items-center justify-center bg-slate-50 px-6 text-slate-900">
+    <main class="max-w-lg text-center">
+        <p class="text-sm font-semibold uppercase text-red-700">403</p>
+        <h1 class="mt-3 text-3xl font-bold">Akses ditolak</h1>
+        <p class="mt-3 text-slate-600">Anda tidak memiliki izin untuk membuka halaman ini.</p>
+        <a href="/" class="mt-6 inline-flex rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white">Kembali ke halaman utama</a>
+    </main>
+</body>
+</html>

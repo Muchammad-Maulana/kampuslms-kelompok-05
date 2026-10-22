@@ -12,18 +12,8 @@ class EnsureUserHasRole
     {
         $user = $request->user();
 
-        if (!$user) {
-            abort(403, 'Anda harus login untuk mengakses halaman ini.');
-        }
-
-        $allowedRoles = array_map(
-            fn (string $role): string => $role === 'mahasiswa' ? 'student' : $role,
-            $roles
-        );
-
-        if (!in_array($user->role, $allowedRoles, true)) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless($user, 401);
+        abort_unless(in_array($user->role, $roles, true), 403);
 
         return $next($request);
     }
