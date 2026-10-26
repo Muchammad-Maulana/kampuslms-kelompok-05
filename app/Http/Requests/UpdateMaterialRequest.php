@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateMaterialRequest extends FormRequest
@@ -13,14 +14,21 @@ class UpdateMaterialRequest extends FormRequest
 
     public function rules(): array
     {
+        $material = $this->route('material');
+        $type = $this->input('type', $material->type);
+
         return [
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'type' => ['sometimes', 'required', 'in:file,link'],
             'external_url' => ['sometimes', 'nullable', 'required_if:type,link', 'url', 'max:2048'],
-            'original_name' => ['sometimes', 'nullable', 'required_if:type,file', 'string', 'max:255'],
-            'file_size' => ['sometimes', 'nullable', 'integer', 'min:0'],
-            'mime_type' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'file' => [
+                Rule::requiredIf($type === 'file' && ! $material->file_path),
+                'nullable',
+                'file',
+                'mimes:pdf,pptx,docx',
+                'max:20480',
+            ],
         ];
     }
 }

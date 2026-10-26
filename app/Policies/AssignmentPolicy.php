@@ -20,6 +20,7 @@ class AssignmentPolicy
         }
 
         return $user->role === 'mahasiswa'
+            && $assignment->course->status === 'active'
             && $assignment->status === 'published'
             && $user->courses()->whereKey($assignment->course_id)->exists();
     }

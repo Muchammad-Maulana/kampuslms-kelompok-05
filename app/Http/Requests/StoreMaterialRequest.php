@@ -20,9 +20,7 @@ class StoreMaterialRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'type' => ['required', Rule::in(['file', 'link'])],
             'external_url' => ['nullable', 'required_if:type,link', 'url', 'max:2048'],
-            'original_name' => ['nullable', 'required_if:type,file', 'string', 'max:255'],
-            'file_size' => ['nullable', 'integer', 'min:0'],
-            'mime_type' => ['nullable', 'string', 'max:255'],
+            'file' => ['required_if:type,file', 'nullable', 'file', 'mimes:pdf,pptx,docx', 'max:20480'],
         ];
     }
 }

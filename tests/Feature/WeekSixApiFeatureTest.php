@@ -148,6 +148,7 @@ class WeekSixApiFeatureTest extends TestCase
         $course = Course::factory()->create([
             'lecturer_id' => $lecturer->id,
             'name' => 'API Course Test',
+            'status' => 'active',
         ]);
         $student = User::factory()->create(['role' => 'mahasiswa']);
         $course->students()->attach($student);
@@ -176,6 +177,39 @@ class WeekSixApiFeatureTest extends TestCase
             ->getJson('/api/v1/courses/'.$course->id);
 
         $response->assertForbidden();
+    }
+
+    public function test_student_course_api_hides_non_active_courses_and_rejects_direct_access(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $activeCourse = Course::factory()->create([
+            'lecturer_id' => $lecturer->id,
+            'status' => 'active',
+        ]);
+        $draftCourse = Course::factory()->create([
+            'lecturer_id' => $lecturer->id,
+            'status' => 'draft',
+        ]);
+        $activeCourse->students()->attach($student);
+        $draftCourse->students()->attach($student);
+        $token = $student->createToken('test')->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/v1/courses?status=draft')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this->withToken($token)
+            ->getJson('/api/v1/courses')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $activeCourse->id)
+            ->assertJsonMissingPath('data.1');
+
+        $this->withToken($token)
+            ->getJson('/api/v1/courses/'.$draftCourse->id)
+            ->assertForbidden();
     }
 
     public function test_student_cannot_list_assignments_for_a_course_they_do_not_take(): void

@@ -22,19 +22,36 @@
 
     @auth
         @if (auth()->user()->role === 'mahasiswa')
-            @php $submission = $assignment->submissions()->where('user_id', auth()->id())->first(); @endphp
+            @php $submission = $studentSubmission; @endphp
             <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 class="text-lg font-bold text-slate-900">Pengumpulan tugas</h2>
                 @if ($submission)
                     <div class="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
                         <p class="font-semibold">File terkirim:</p>
                         <p class="mt-1">{{ $submission->original_name }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ number_format($submission->file_size / 1048576, 2) }} MB · {{ $submission->is_late ? 'Terlambat' : 'Tepat waktu' }}</p>
                         <p class="mt-1 text-xs text-slate-500">Dikirim {{ $submission->submitted_at?->format('d M Y H:i') ?? 'belum tercatat' }}</p>
+                        <a class="mt-3 inline-flex rounded-md bg-blue-700 px-3 py-2 text-xs font-semibold text-white" href="{{ route('mahasiswa.submissions.download', $submission) }}">Unduh pengumpulan saya</a>
                     </div>
+                    @if ($canSubmit)
+                        <form action="{{ route('mahasiswa.mata-kuliah.assignments.submissions.update', [$assignment->course, $assignment, $submission]) }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">
+                            @csrf
+                            @method('PUT')
+                            <div>
+                                <label for="file" class="mb-1 block text-sm font-semibold text-slate-700">Ganti file jawaban (opsional, PDF/DOC/DOCX; maksimal 5 MB)</label>
+                                <input id="file" name="file" type="file" accept=".pdf,.doc,.docx" class="block w-full rounded-lg border border-slate-300 text-sm text-slate-700">
+                            </div>
+                            <div>
+                                <label for="note" class="mb-1 block text-sm font-semibold text-slate-700">Catatan</label>
+                                <textarea id="note" name="note" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{ $submission->note }}</textarea>
+                            </div>
+                            <button type="submit" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white">Perbarui pengumpulan</button>
+                        </form>
+                    @endif
                     @if (!$submission->grade)
                         <p class="mt-4 text-sm text-slate-500">Tugas sudah dikirim dan menunggu penilaian dari dosen.</p>
                     @endif
-                @else
+                @elseif ($canSubmit)
                     <form action="{{ route('mahasiswa.mata-kuliah.assignments.submissions.store', [$assignment->course, $assignment]) }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">
                         @csrf
                         <div>
@@ -47,31 +64,43 @@
                         </div>
                         <button type="submit" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white">Kirim tugas</button>
                     </form>
+                @else
+                    <p class="mt-4 text-sm text-slate-500">Batas pengumpulan telah lewat dan tugas terlambat tidak diizinkan.</p>
                 @endif
             </div>
         @else
-            @php $submissions = $assignment->submissions()->with(['user', 'grade'])->get(); @endphp
             <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 class="text-lg font-bold text-slate-900">Pengumpulan mahasiswa</h2>
-                @forelse ($submissions as $submission)
+                @forelse ($students as $student)
+                    @php $submission = $submissions->get($student->id); @endphp
                     <div class="mt-4 rounded-xl border border-slate-200 p-4">
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
-                                <p class="font-semibold text-slate-900">{{ $submission->user->name }}</p>
-                                <p class="text-sm text-slate-500">{{ $submission->original_name }} · {{ $submission->submitted_at?->format('d M Y H:i') }}</p>
+                                <p class="font-semibold text-slate-900">{{ $student->name }}</p>
+                                @if ($submission)
+                                    <p class="text-sm text-slate-500">{{ $submission->original_name }} · {{ number_format($submission->file_size / 1048576, 2) }} MB · {{ $submission->submitted_at?->format('d M Y H:i') }}</p>
+                                @else
+                                    <p class="text-sm text-slate-500">Belum mengumpulkan</p>
+                                @endif
                             </div>
-                            @if ($submission->grade)
+                            @if (!$submission)
+                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Belum mengumpulkan</span>
+                            @elseif ($submission->grade)
                                 <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Nilai: {{ $submission->grade->score }}</span>
                             @else
-                                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Belum dinilai</span>
+                                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ $submission->is_late ? 'Terlambat · Belum dinilai' : 'Belum dinilai' }}</span>
                             @endif
                         </div>
 
-                        @if ($submission->note)
+                        @if ($submission)
+                            <a class="mt-3 inline-flex rounded-md bg-blue-700 px-3 py-2 text-xs font-semibold text-white" href="{{ route(auth()->user()->role . '.submissions.download', $submission) }}">Unduh submission</a>
+                        @endif
+
+                        @if ($submission && $submission->note)
                             <p class="mt-3 text-sm text-slate-600">Catatan: {{ $submission->note }}</p>
                         @endif
 
-                        @if (!$submission->grade)
+                        @if ($submission && !$submission->grade)
                             <form action="{{ route(auth()->user()->role . '.mata-kuliah.assignments.submissions.grade', [$assignment->course, $assignment, $submission]) }}" method="POST" class="mt-4 space-y-3">
                                 @csrf
                                 <div>
@@ -84,7 +113,7 @@
                                 </div>
                                 <button type="submit" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white">Simpan nilai</button>
                             </form>
-                        @else
+                        @elseif ($submission)
                             <div class="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
                                 <p class="font-semibold">Feedback</p>
                                 <p class="mt-1 whitespace-pre-line">{{ $submission->grade->feedback ?: 'Tidak ada feedback.' }}</p>

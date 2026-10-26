@@ -18,6 +18,8 @@
             @endif
             @if ($material->original_name)
                 <div><dt class="text-slate-500">Nama berkas</dt><dd class="font-semibold">{{ $material->original_name }}</dd></div>
+                <div><dt class="text-slate-500">Ukuran berkas</dt><dd class="font-semibold">{{ number_format($material->file_size / 1048576, 2) }} MB</dd></div>
+                <div class="sm:col-span-2"><a class="inline-flex rounded-md bg-blue-700 px-4 py-2 font-semibold text-white" href="{{ route(auth()->user()->role . '.materials.download', $material) }}">Unduh materi</a></div>
             @endif
         </dl>
     </div>

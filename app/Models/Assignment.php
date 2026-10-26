@@ -16,6 +16,7 @@ class Assignment extends Model
             'admin' => $query,
             'dosen' => $query->whereHas('course', fn (Builder $courses) => $courses->where('lecturer_id', $user->id)),
             'mahasiswa' => $query->where('status', 'published')
+                ->whereHas('course', fn (Builder $courses) => $courses->where('status', 'active'))
                 ->whereHas('course.students', fn (Builder $students) => $students->whereKey($user->id)),
             default => $query->whereRaw('1 = 0'),
         };

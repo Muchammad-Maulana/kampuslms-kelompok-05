@@ -26,7 +26,7 @@
             <label for="status" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status</label>
             <select id="status" name="status" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none">
                 <option value="">Semua status</option>
-                @foreach (['draft', 'active', 'archived'] as $status)
+                @foreach (auth()->user()->role === 'mahasiswa' ? ['active'] : ['draft', 'active', 'archived'] as $status)
                     <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
                 @endforeach
             </select>

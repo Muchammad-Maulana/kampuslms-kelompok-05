@@ -35,7 +35,7 @@ class CourseFactory extends Factory
                 ->where('role', 'dosen')
                 ->inRandomOrder()
                 ->value('id'),
-            'status' => fake()->randomElement(['draft', 'active', 'archived']),
+            'status' => 'active',
         ];
     }
 }

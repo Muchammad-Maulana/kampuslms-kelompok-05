@@ -19,7 +19,8 @@ class Course extends Model
         return match ($user->role) {
             'admin' => $query,
             'dosen' => $query->where('lecturer_id', $user->id),
-            'mahasiswa' => $query->whereHas('students', fn (Builder $students) => $students->whereKey($user->id)),
+            'mahasiswa' => $query->where('status', 'active')
+                ->whereHas('students', fn (Builder $students) => $students->whereKey($user->id)),
             default => $query->whereRaw('1 = 0'),
         };
     }

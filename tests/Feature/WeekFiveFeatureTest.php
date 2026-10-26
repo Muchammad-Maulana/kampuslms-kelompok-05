@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Course;
 use App\Models\Assignment;
 use App\Models\Material;
+use App\Models\Submission;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,7 +65,10 @@ class WeekFiveFeatureTest extends TestCase
     {
         $student = User::factory()->create(['role' => 'mahasiswa']);
         $lecturer = User::factory()->create(['role' => 'dosen']);
-        $course = Course::factory()->create(['lecturer_id' => $lecturer->id]);
+        $course = Course::factory()->create([
+            'lecturer_id' => $lecturer->id,
+            'status' => 'active',
+        ]);
 
         $response = $this->actingAs($student)->get(route('mahasiswa.mata-kuliah.show', $course));
 
@@ -97,6 +101,68 @@ class WeekFiveFeatureTest extends TestCase
         $this->actingAs($student)
             ->get(route('mahasiswa.mata-kuliah.show', $courses[1]))
             ->assertForbidden();
+    }
+
+    public function test_student_cannot_see_or_open_non_active_courses_even_when_enrolled(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $activeCourse = Course::factory()->create([
+            'name' => 'Mata Kuliah Aktif',
+            'lecturer_id' => $lecturer->id,
+            'status' => 'active',
+        ]);
+        $draftCourse = Course::factory()->create([
+            'name' => 'Mata Kuliah Draft',
+            'lecturer_id' => $lecturer->id,
+            'status' => 'draft',
+        ]);
+        $archivedCourse = Course::factory()->create([
+            'name' => 'Mata Kuliah Arsip',
+            'lecturer_id' => $lecturer->id,
+            'status' => 'archived',
+        ]);
+        $activeCourse->students()->attach($student);
+        $draftCourse->students()->attach($student);
+        $archivedCourse->students()->attach($student);
+        $publishedAssignment = Assignment::create([
+            'course_id' => $draftCourse->id,
+            'created_by' => $lecturer->id,
+            'title' => 'Tugas Course Draft',
+            'instructions' => 'Course belum aktif.',
+            'due_at' => now()->addDay(),
+            'status' => 'published',
+        ]);
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.index'))
+            ->assertOk()
+            ->assertSee('Mata Kuliah Aktif')
+            ->assertDontSee('Mata Kuliah Draft')
+            ->assertDontSee('Mata Kuliah Arsip');
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.index', ['status' => 'draft']))
+            ->assertOk()
+            ->assertDontSee('Mata Kuliah Draft');
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.show', $draftCourse))
+            ->assertForbidden();
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.show', $archivedCourse))
+            ->assertForbidden();
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.assignments.index', $draftCourse))
+            ->assertForbidden();
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.assignments.show', $publishedAssignment))
+            ->assertForbidden();
+
+        $this->assertFalse($student->can('create', [Submission::class, $publishedAssignment]));
     }
 
     public function test_lecturer_cannot_view_material_from_another_course(): void
@@ -144,7 +210,10 @@ class WeekFiveFeatureTest extends TestCase
     {
         $student = User::factory()->create(['role' => 'mahasiswa']);
         $lecturer = User::factory()->create(['role' => 'dosen']);
-        $course = Course::factory()->create(['lecturer_id' => $lecturer->id]);
+        $course = Course::factory()->create([
+            'lecturer_id' => $lecturer->id,
+            'status' => 'active',
+        ]);
         $course->students()->attach($student);
         Assignment::create([
             'course_id' => $course->id,
