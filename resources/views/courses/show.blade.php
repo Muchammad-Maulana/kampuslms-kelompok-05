@@ -15,6 +15,9 @@
             <div class="mt-4 flex flex-wrap gap-3">
                 <a class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700" href="{{ route(str_replace('mata-kuliah', 'mata-kuliah.materials', $routePrefix) . '.index', $course) }}">Semua Materi ({{ $course->materials->count() }})</a>
                 <a class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700" href="{{ route(str_replace('mata-kuliah', 'mata-kuliah.assignments', $routePrefix) . '.index', $course) }}">Semua Tugas ({{ $course->assignments->count() }})</a>
+                @if (auth()->user()->role === 'dosen')
+                    <a class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800" href="{{ route('dosen.mata-kuliah.grades', $course) }}">Rekap nilai</a>
+                @endif
             </div>
             <div class="mt-5">
                 <h3 class="font-semibold text-slate-900">Materi tersedia</h3>

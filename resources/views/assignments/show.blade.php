@@ -50,6 +50,12 @@
                     @endif
                     @if (!$submission->grade)
                         <p class="mt-4 text-sm text-slate-500">Tugas sudah dikirim dan menunggu penilaian dari dosen.</p>
+                    @else
+                        <div class="mt-4 rounded-lg bg-green-50 p-4 text-sm text-green-900">
+                            <p class="font-semibold">Nilai: {{ $submission->grade->score }} / {{ $assignment->max_score }}</p>
+                            <p class="mt-2 font-semibold">Feedback dosen</p>
+                            <p class="mt-1 whitespace-pre-line">{{ $submission->grade->feedback ?: 'Tidak ada feedback.' }}</p>
+                        </div>
                     @endif
                 @elseif ($canSubmit)
                     <form action="{{ route('mahasiswa.mata-kuliah.assignments.submissions.store', [$assignment->course, $assignment]) }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">

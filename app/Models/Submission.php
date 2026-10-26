@@ -48,7 +48,7 @@ class Submission extends Model
     // Setiap submission dibuat oleh satu user atau mahasiswa.
     public function student(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function user(): BelongsTo

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Assignment;
-use App\Models\Course;
+use App\Events\AssignmentPublished;
 use App\Http\Requests\StoreAssignmentRequest;
 use App\Http\Requests\UpdateAssignmentRequest;
+use App\Models\Assignment;
+use App\Models\Course;
+use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Submission;
 
 class AssignmentController extends Controller
 {
@@ -28,7 +29,7 @@ class AssignmentController extends Controller
     public function create(Course $course)
     {
         Gate::authorize('create', [Assignment::class, $course]);
-        $assignment = new Assignment();
+        $assignment = new Assignment;
 
         return view('assignments.form', compact('course', 'assignment'));
     }
@@ -42,7 +43,11 @@ class AssignmentController extends Controller
             'created_by' => $request->user()->id,
         ]));
 
-        return redirect()->route($request->user()->role . '.assignments.show', $assignment)
+        if ($assignment->status === 'published') {
+            AssignmentPublished::dispatch($assignment);
+        }
+
+        return redirect()->route($request->user()->role.'.assignments.show', $assignment)
             ->with('success', 'Tugas berhasil ditambahkan.');
     }
 
@@ -57,9 +62,14 @@ class AssignmentController extends Controller
     public function update(UpdateAssignmentRequest $request, Assignment $assignment)
     {
         Gate::authorize('update', $assignment);
+        $wasPublished = $assignment->status === 'published';
         $assignment->update($request->validated());
 
-        return redirect()->route($request->user()->role . '.assignments.show', $assignment)
+        if (! $wasPublished && $assignment->status === 'published') {
+            AssignmentPublished::dispatch($assignment);
+        }
+
+        return redirect()->route($request->user()->role.'.assignments.show', $assignment)
             ->with('success', 'Tugas berhasil diperbarui.');
     }
 
@@ -70,7 +80,7 @@ class AssignmentController extends Controller
         $assignment->submissions()->get()->each->delete();
         $assignment->delete();
 
-        return redirect()->route($request->user()->role . '.mata-kuliah.assignments.index', $course)
+        return redirect()->route($request->user()->role.'.mata-kuliah.assignments.index', $course)
             ->with('success', 'Tugas berhasil dihapus.');
     }
 
