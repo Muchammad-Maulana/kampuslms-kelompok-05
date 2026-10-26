@@ -94,6 +94,16 @@
                         </a>
                     @endif
 
+                    @if (auth()->user()?->role === 'mahasiswa')
+                        <a
+                            href="{{ route('mahasiswa.grades.index') }}"
+                            class="flex items-center gap-3 rounded-xl px-4 py-3 {{ request()->routeIs('mahasiswa.grades.*') ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}"
+                        >
+                            <span class="material-symbols-outlined">grade</span>
+                            Rekap Nilai
+                        </a>
+                    @endif
+
                     <a
                         href="{{ route('tentang') }}"
                         class="flex items-center gap-3 rounded-xl px-4 py-3
@@ -161,7 +171,12 @@
                     </div>
 
                     @auth
+                    @php($unreadNotificationCount = auth()->user()->unreadNotifications()->count())
                     <div class="hidden md:flex items-center gap-3">
+                        <a href="{{ route('notifications.index') }}" class="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label="Notifikasi">
+                            <span class="material-symbols-outlined align-middle">notifications</span>
+                            <span id="notification-count" class="{{ $unreadNotificationCount ? '' : 'hidden' }} absolute -right-1 -top-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-[10px] font-bold leading-5 text-white" aria-live="polite">{{ $unreadNotificationCount }}</span>
+                        </a>
                         <div class="text-right">
                             <p class="text-sm font-semibold text-slate-800">
                                 {{ auth()->user()->role === 'mahasiswa' ? 'Mahasiswa' : ucfirst(auth()->user()->role) }}
@@ -196,6 +211,13 @@
                     @else
                         <a href="{{ route(auth()->user()->role . '.mata-kuliah.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs(auth()->user()->role . '.mata-kuliah.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Mata Kuliah</a>
                     @endif
+                    @if (auth()->user()->role === 'mahasiswa')
+                        <a href="{{ route('mahasiswa.grades.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('mahasiswa.grades.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Rekap Nilai</a>
+                    @endif
+                    <a href="{{ route('notifications.index') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('notifications.*') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">
+                        Notifikasi
+                        <span id="mobile-notification-count" class="{{ $unreadNotificationCount ? '' : 'hidden' }} ml-1 rounded-full bg-red-600 px-1.5 py-0.5 text-xs text-white">{{ $unreadNotificationCount }}</span>
+                    </a>
                     <a href="{{ route('tentang') }}" class="shrink-0 rounded-md px-3 py-2 text-sm font-semibold {{ request()->routeIs('tentang') ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">Tentang</a>
                 </nav>
             @endauth
@@ -209,6 +231,41 @@
         </div>
 
     </div>
+
+    @auth
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const badge = document.getElementById('notification-count');
+                const mobileBadge = document.getElementById('mobile-notification-count');
+
+                const refreshUnreadCount = async () => {
+                    try {
+                        const response = await fetch(@json(route('notifications.unread-count')), {
+                            headers: { Accept: 'application/json' },
+                            credentials: 'same-origin',
+                        });
+                        if (!response.ok) {
+                            throw new Error(`Notification count request failed with ${response.status}`);
+                        }
+
+                        const { count } = await response.json();
+                        if (badge) {
+                            badge.textContent = count;
+                            badge.classList.toggle('hidden', count === 0);
+                        }
+                        if (mobileBadge) {
+                            mobileBadge.textContent = count;
+                            mobileBadge.classList.toggle('hidden', count === 0);
+                        }
+                    } catch (error) {
+                        console.error('Unable to refresh notification count.', error);
+                    }
+                };
+
+                window.setInterval(refreshUnreadCount, 30000);
+            });
+        </script>
+    @endauth
 
 </body>
 </html>

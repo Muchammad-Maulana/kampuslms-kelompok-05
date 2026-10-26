@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\GradeAwarded;
 use App\Models\Assignment;
 use App\Models\Course;
+use App\Models\Grade;
 use App\Models\Submission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -94,14 +96,14 @@ class SubmissionController extends Controller
     public function grade(Request $request, Course $course, Assignment $assignment, Submission $submission): RedirectResponse
     {
         abort_unless($assignment->course_id === $course->id && $submission->assignment_id === $assignment->id, 404);
-        $this->authorize('create', [\App\Models\Grade::class, $submission]);
+        $this->authorize('create', [Grade::class, $submission]);
 
         $validated = $request->validate([
             'score' => ['required', 'numeric', 'min:0', 'max:'.$assignment->max_score],
             'feedback' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $submission->grade()->updateOrCreate(
+        $grade = $submission->grade()->updateOrCreate(
             ['submission_id' => $submission->id],
             [
                 'score' => $validated['score'],
@@ -110,6 +112,8 @@ class SubmissionController extends Controller
                 'graded_at' => now(),
             ]
         );
+
+        GradeAwarded::dispatch($grade);
 
         return redirect()->route(auth()->user()->role.'.mata-kuliah.assignments.scoped-show', ['course' => $course, 'assignment' => $assignment])
             ->with('success', 'Nilai tugas berhasil disimpan.');

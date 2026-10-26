@@ -16,6 +16,14 @@ class Grade extends Model
         'graded_at',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'score' => 'decimal:2',
+            'graded_at' => 'datetime',
+        ];
+    }
+
     // Setiap grade dimiliki oleh satu submission.
     public function submission(): BelongsTo
     {
