@@ -4,9 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Support\DashboardCache;
 
 class Grade extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            DashboardCache::invalidate();
+        });
+        static::deleted(function (): void {
+            DashboardCache::invalidate();
+        });
+    }
+
     // Field nilai yang boleh diisi saat grade dibuat atau diperbarui.
     protected $fillable = [
         'submission_id',

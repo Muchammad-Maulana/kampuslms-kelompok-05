@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
+use App\Support\DashboardCache;
 
 class Submission extends Model
 {
@@ -32,6 +33,12 @@ class Submission extends Model
 
     protected static function booted(): void
     {
+        static::saved(function (): void {
+            DashboardCache::invalidate();
+        });
+        static::deleted(function (): void {
+            DashboardCache::invalidate();
+        });
         static::deleting(function (Submission $submission): void {
             if ($submission->file_path) {
                 Storage::disk('local')->delete($submission->file_path);

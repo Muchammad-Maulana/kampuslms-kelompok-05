@@ -9,10 +9,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Support\DashboardCache;
 
 class Course extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            DashboardCache::invalidate();
+        });
+        static::deleted(function (): void {
+            DashboardCache::invalidate();
+        });
+    }
 
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {

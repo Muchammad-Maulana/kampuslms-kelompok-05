@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateCourseEnrollmentRequest;
 use App\Models\Course;
 use App\Models\User;
+use App\Support\DashboardCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -26,6 +27,7 @@ class EnrollmentController extends Controller
     public function update(UpdateCourseEnrollmentRequest $request, Course $course): RedirectResponse
     {
         $course->students()->sync($request->validated()['student_ids'] ?? []);
+        DashboardCache::invalidate();
 
         return redirect()->route($request->user()->role . '.mata-kuliah.show', $course)
             ->with('success', 'Pendaftaran mahasiswa berhasil diperbarui.');

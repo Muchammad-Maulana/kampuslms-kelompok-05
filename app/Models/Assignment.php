@@ -7,9 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use App\Support\DashboardCache;
 
 class Assignment extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            DashboardCache::invalidate();
+        });
+        static::deleted(function (): void {
+            DashboardCache::invalidate();
+        });
+    }
+
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
         return match ($user->role) {
