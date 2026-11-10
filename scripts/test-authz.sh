@@ -10,6 +10,12 @@ LECTURER_TOKEN=""
 STUDENT_TOKEN=""
 
 PHP_BIN="${PHP_BIN:-php}"
+ADMIN_EMAIL="${AUTHZ_ADMIN_EMAIL:-admin@kampuslms.test}"
+LECTURER_EMAIL="${AUTHZ_LECTURER_EMAIL:-dosen@kampuslms.test}"
+STUDENT_EMAIL="${AUTHZ_STUDENT_EMAIL:-mahasiswa@kampuslms.test}"
+ADMIN_PASSWORD="${AUTHZ_ADMIN_PASSWORD:-password}"
+LECTURER_PASSWORD="${AUTHZ_LECTURER_PASSWORD:-password}"
+STUDENT_PASSWORD="${AUTHZ_STUDENT_PASSWORD:-password}"
 
 if ! command -v "$PHP_BIN" >/dev/null 2>&1; then
 	for candidate in /c/laragon/bin/php/php-*/php.exe; do
@@ -29,11 +35,12 @@ done
 
 login() {
 	local email="$1"
+	local login_secret="$2"
 	local response
 	response="$(curl -fsS "$API/auth/login" \
 		-H 'Accept: application/json' \
 		-H 'Content-Type: application/json' \
-		-d "$("$PHP_BIN" -r 'echo json_encode(["email" => $argv[1], "password" => "password", "device_name" => "week-7-authz"]);' "$email")")"
+		-d "$(AUTHZ_LOGIN_PASSWORD="$login_secret" "$PHP_BIN" -r 'echo json_encode(["email" => $argv[1], "password" => getenv("AUTHZ_LOGIN_PASSWORD"), "device_name" => "week-7-authz"]);' "$email")")"
 	json_value "$response" token
 }
 
@@ -89,9 +96,9 @@ expect_status() {
 	capture_status "$@"
 }
 
-STUDENT_TOKEN="$(login mahasiswa@kampuslms.test)"
-LECTURER_TOKEN="$(login dosen@kampuslms.test)"
-ADMIN_TOKEN="$(login admin@kampuslms.test)"
+STUDENT_TOKEN="$(login "$STUDENT_EMAIL" "$STUDENT_PASSWORD")"
+LECTURER_TOKEN="$(login "$LECTURER_EMAIL" "$LECTURER_PASSWORD")"
+ADMIN_TOKEN="$(login "$ADMIN_EMAIL" "$ADMIN_PASSWORD")"
 LECTURER_ID="$(json_value "$(curl -fsS "$API/me" -H "Authorization: Bearer $LECTURER_TOKEN")" data.id)"
 STUDENT_COURSES="$(curl -fsS "$API/courses" -H "Authorization: Bearer $STUDENT_TOKEN")"
 ADMIN_COURSES="$(curl -fsS "$API/courses" -H "Authorization: Bearer $ADMIN_TOKEN")"

@@ -35,7 +35,7 @@ class UserController extends Controller
             $query->where('role', $filters['role']);
         }
 
-        $users = $query->latest()->paginate(15)->withQueryString();
+        $users = $query->latest()->orderByDesc('id')->paginate(15)->withQueryString();
 
         return view('users.index', compact('users', 'filters'));
     }

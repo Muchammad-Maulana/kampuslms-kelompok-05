@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Course;
 use App\Models\Assignment;
+use App\Models\Course;
 use App\Models\Grade;
 use App\Models\Submission;
 use App\Models\User;
@@ -46,8 +46,8 @@ class WeekSevenAccessFeatureTest extends TestCase
             ->get(route('admin.users.index', ['q' => 'Pagination User', 'role' => 'mahasiswa']));
 
         $response->assertOk()
-            ->assertSee('Pagination User 0')
-            ->assertDontSee('Pagination User 19')
+            ->assertSee('Pagination User 19')
+            ->assertDontSee('Pagination User 0')
             ->assertSee(route('admin.users.index', [
                 'q' => 'Pagination User',
                 'role' => 'mahasiswa',
