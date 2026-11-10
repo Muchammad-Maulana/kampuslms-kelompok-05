@@ -20,7 +20,9 @@ RUN apt-get update \
     && docker-php-ext-install -j"$(nproc)" bcmath exif gd mbstring pcntl pdo_mysql xml zip \
     && a2enmod headers rewrite \
     && sed -ri 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf \
-    && rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* \
+    && for module in mpm_event mpm_worker; do \
+        if a2query -m "$module" >/dev/null 2>&1; then a2dismod "$module"; fi; \
+    done \
     && a2enmod mpm_prefork \
     && printf '%s\n' \
         'ServerTokens Prod' \
