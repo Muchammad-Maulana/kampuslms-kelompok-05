@@ -11,11 +11,22 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
+use App\Support\DashboardCache;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            DashboardCache::invalidate();
+        });
+        static::deleted(function (): void {
+            DashboardCache::invalidate();
+        });
+    }
 
     /**
      * The attributes that are mass assignable.

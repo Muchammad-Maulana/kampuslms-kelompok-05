@@ -152,6 +152,7 @@ class DatabaseSeeder extends Seeder
         $gradesNeeded = max(0, (int) ceil(Submission::query()->count() * 0.6) - Grade::query()->count());
         $submissionsToGrade = Submission::query()
             ->whereDoesntHave('grade')
+            ->with('assignment.course')
             ->inRandomOrder()
             ->limit($gradesNeeded)
             ->get();
