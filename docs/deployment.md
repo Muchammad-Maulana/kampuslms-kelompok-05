@@ -120,6 +120,7 @@ Hindari menaruh password produksi dalam shell history. Jalankan pengujian setela
 | Gejala | Pemeriksaan dan tindakan |
 |---|---|
 | Container gagal build pada Composer | Periksa log build, versi PHP pada Dockerfile, lockfile, dan ekstensi PHP. Jangan memakai `--ignore-platform-reqs`; itu menyembunyikan ketidakcocokan runtime. |
+| Apache crash dengan `More than one MPM loaded` | Pastikan deployment memakai commit terbaru; entrypoint memilih `mpm_prefork` saat container mulai dan gagal dengan pesan modul jika konfigurasi Apache masih bertentangan. |
 | Railway menampilkan 502 | Pastikan deployment aktif, `PORT` diteruskan ke Apache, konfigurasi health check `/up`, dan APP_KEY tersedia. Baca deploy log tanpa menyalakan `APP_DEBUG`. |
 | Error database saat pre-deploy | Periksa koneksi internal MySQL dan referensi Variables; jangan mengabaikan kegagalan `migrate --force`. |
 | Request selain `/` menjadi 404 | Pastikan `mod_rewrite` aktif, `AllowOverride All` berlaku, dan DocumentRoot Apache adalah `/var/www/html/public`. |
