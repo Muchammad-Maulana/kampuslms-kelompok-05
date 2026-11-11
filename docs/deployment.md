@@ -40,7 +40,7 @@ Panduan ini menjelaskan konfigurasi aplikasi dan langkah deploy menggunakan Dock
    ```
 
    Buat APP_KEY untuk pertama kali dengan `php artisan key:generate --show` pada lingkungan lokal tepercaya, lalu masukkan hasilnya hanya ke Variables Railway. Jangan commit, kirim ke chat, atau gunakan ulang key di lingkungan lain. Setelah tersimpan, jangan membuat ulang key pada setiap deploy karena itu membatalkan sesi terenkripsi.
-4. Di pengaturan service aplikasi, atur pre-deploy command menjadi `php artisan migrate --force`. Perintah ini hanya menjalankan migrasi; **jangan** menjalankan `migrate:fresh` atau `db:seed` otomatis saat container start.
+4. `railway.json` menjalankan `php artisan migrate --force` sebagai pre-deploy command pada setiap rilis. Perintah ini hanya menjalankan migrasi yang belum diterapkan; **jangan** menjalankan `migrate:fresh` atau `db:seed` otomatis saat container start.
 5. Generate public domain di Railway. Pastikan domain memakai HTTPS. Atur volume persisten pada service aplikasi ke `/var/www/html/storage/app/private` agar berkas privat tidak hilang saat container diganti. Volume Railway tidak otomatis dibagi dengan service lain.
 6. Deploy aplikasi. Health check harus mendapat respons sukses dari `/up`.
 
