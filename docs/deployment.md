@@ -9,6 +9,7 @@ Panduan ini menjelaskan konfigurasi aplikasi dan langkah deploy menggunakan Dock
 - Queue memakai database dan memerlukan service worker terpisah.
 - Berkas submission dan materi menggunakan disk `local` privat di `storage/app/private`.
 - `railway.json` memeriksa endpoint Laravel `/up`; public document root container mengarah ke `public/`.
+- Laravel mempercayai forwarded headers dari Railway agar URL dan aset memakai HTTPS di balik proxy TLS.
 
 ## Persiapan project Railway
 
