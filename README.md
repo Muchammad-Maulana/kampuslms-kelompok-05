@@ -1,5 +1,9 @@
 # Nama Proyek : LMS Kelompok 5
 
+## Deployment
+
+Aplikasi production: [KampusLMS di Railway](https://kampuslms-kelompok-05-production.up.railway.app/).
+
 ## Autentikasi
 
 - Pengguna masuk melalui `/login` dan keluar melalui tombol **Keluar**.
