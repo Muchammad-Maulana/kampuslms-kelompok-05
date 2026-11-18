@@ -1,4 +1,12 @@
-# Nama Proyek : LMS Kelompok 5
+# Nama Proyek : LMS Kelompok 5 — A05
+
+## Deployment
+
+Aplikasi production: [KampusLMS di Railway](https://kampuslms-kelompok-05-production.up.railway.app/).
+
+## Fitur A05: Papan Peringkat dan Lencana
+
+Pada setiap mata kuliah, mahasiswa terdaftar dan dosen pengampu dapat melihat jumlah pengumpulan tepat waktu, persentase submission tepat waktu, peringkat, dan lencana mahasiswa. Peringkat memakai jumlah pengumpulan tepat waktu sebagai kriteria utama dan persentase sebagai pemecah nilai seri. Hanya tugas terbit yang sudah melewati batas waktu yang dihitung; nilai tugas tidak ditampilkan. Lencana diberikan pada 3, 5, dan 10 pengumpulan tepat waktu.
 
 ## Autentikasi
 
@@ -20,8 +28,13 @@ Tanpa worker, notifikasi tugas baru dan nilai yang sudah diberikan tetap mengant
 
 Lonceng notifikasi memperbarui jumlah yang belum dibaca setiap 30 detik. Halaman `/notifications` menampilkan notifikasi milik akun yang sedang masuk dan menyediakan aksi tandai dibaca. Rekap nilai tersedia di halaman detail course dosen dan menu **Rekap Nilai** mahasiswa.
 
-## Daftar Anggota
-- [Linggar Pramudia (10241039)](https://github.com/Ling9ar)
-- [Melodiva Rosananda (10241041)](https://github.com/melodivarosa)
-- [Muchammad Maulana (10241043)](https://github.com/Muchammad-Maulana)
-- [Muhammad Daffa Naufarrel Putranada (10241045)](https://github.com/Azroef)
+## Anggota dan Pembagian Peran
+
+| Anggota | Peran/status pada Minggu 13 |
+|---|---|
+| [Muchammad Maulana (10241043)](https://github.com/Muchammad-Maulana) | Anggota aktif A05; saat ini mengerjakan fitur papan peringkat dan lencana ketepatan waktu secara solo, serta tugas Minggu 13. |
+| [Linggar Pramudia (10241039)](https://github.com/Ling9ar) | Kontributor historis; tidak aktif pada pengerjaan Minggu 13. |
+| [Melodiva Rosananda (10241041)](https://github.com/melodivarosa) | Kontributor historis; tidak aktif pada pengerjaan Minggu 13. |
+| [Muhammad Daffa Naufarrel Putranada (10241045)](https://github.com/Azroef) | Kontributor historis; tidak aktif pada pengerjaan Minggu 13. |
+
+Sebagian commit lama memakai identitas bersama `Kelompok 5`, sehingga riwayat Git tidak cukup untuk membagi semua pekerjaan lama ke anggota tertentu. Jumlah commit juga bukan satu-satunya ukuran kontribusi.

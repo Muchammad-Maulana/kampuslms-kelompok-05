@@ -25,4 +25,18 @@ esac
 
 sed -i "s/^Listen .*/Listen ${port}/" /etc/apache2/ports.conf
 sed -i "s/<VirtualHost \\*:.*>/<VirtualHost *:${port}>/" /etc/apache2/sites-available/000-default.conf
+
+rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf
+a2enmod mpm_prefork
+apache_modules="$(apache2ctl -M 2>&1)" || {
+    printf '%s\n' "$apache_modules" >&2
+    exit 1
+}
+if ! printf '%s\n' "$apache_modules" | grep -q 'mpm_prefork_module' ||
+    printf '%s\n' "$apache_modules" | grep -Eq 'mpm_(event|worker)_module'; then
+    printf '%s\n' "$apache_modules" >&2
+    echo "Apache must load only mpm_prefork." >&2
+    exit 1
+fi
+
 exec apache2-foreground

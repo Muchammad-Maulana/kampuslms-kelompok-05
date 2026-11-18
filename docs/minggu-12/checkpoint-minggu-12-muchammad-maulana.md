@@ -6,7 +6,7 @@
 - **NIM:** 10241043
 - **Proyek:** KampusLMS — Laravel 12
 
-> Domain Railway dan hasil pemeriksaan produksi belum tersedia dari workspace ini. Bagian yang membutuhkan bukti live harus dilengkapi dengan keluaran asli setelah deployment; jangan menganggap konfigurasi lokal sebagai bukti production.
+> Aplikasi sudah tersedia di Railway. Catatan berikut membedakan hal yang sudah diverifikasi pada domain publik dari pekerjaan yang masih memerlukan layanan tambahan atau tindakan anggota kelompok.
 
 ---
 
@@ -28,7 +28,7 @@ curl -I https://domain-anda.example.com/storage/logs/laravel.log
 curl -I https://domain-anda.example.com/composer.json
 ```
 
-Semua harus menghasilkan status selain 200. Domain aktual dan kode respons aktual: **belum tersedia; isi setelah deploy**.
+Pada 12 November 2026, ketiganya merespons **404** di domain [KampusLMS Railway](https://kampuslms-kelompok-05-production.up.railway.app/).
 
 ## 3. Apa akibatnya bila queue worker mati?
 
@@ -66,12 +66,16 @@ Pertahankan `APP_DEBUG=false`; baca deploy log Railway dan log aplikasi. Periksa
 
 ## 9. Apa hasil deployment kelompok?
 
-- Domain HTTPS: **belum tersedia pada workspace ini**.
-- `curl` file sensitif, redirect HTTP, dan header: **belum dijalankan pada domain live**.
-- Status worker dan hasil test otorisasi pada server: **belum tersedia**.
-- Perangkat anggota lain yang dipakai serta kendala nyata: **catat setelah pengujian**.
+- Domain HTTPS: https://kampuslms-kelompok-05-production.up.railway.app/
+- `GET /`, `/up`, dan `/login`: **200**.
+- Tanpa login, `/dashboard` dan `/admin/users` mengarahkan ke login (**302**).
+- `/.env`, `/composer.json`, dan `/storage/logs/laravel.log`: **404**.
+- HTTP dialihkan ke HTTPS (**301**); aset CSS/JavaScript menggunakan HTTPS dan merespons **200**.
+- Header yang diverifikasi: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, dan `Referrer-Policy: strict-origin-when-cross-origin`.
+- Migrasi awal dijalankan dengan `php artisan migrate --force`; perintah yang sama kini dikonfigurasi sebagai pre-deploy command untuk rilis berikutnya.
+- Worker, volume persistent, akun demo production, skrip mutatif `test-authz.sh`, dan pengujian dari perangkat anggota lain **belum diverifikasi/dilakukan**. Worker dan volume memerlukan resource Railway tambahan; jangan menyatakan fitur antrean atau unggahan persisten siap production sebelum dikonfigurasi dan diuji.
 
-Build aset lokal berhasil. Seluruh bukti yang masih kosong di atas merupakan pekerjaan operasional kelompok di akun Railway, bukan hasil yang dapat dibuktikan dari build lokal.
+Build aset lokal dan regression test forwarded HTTPS berhasil.
 
 ## 10. Hal yang dipelajari dengan bantuan AI
 

@@ -9,6 +9,7 @@ Panduan ini menjelaskan konfigurasi aplikasi dan langkah deploy menggunakan Dock
 - Queue memakai database dan memerlukan service worker terpisah.
 - Berkas submission dan materi menggunakan disk `local` privat di `storage/app/private`.
 - `railway.json` memeriksa endpoint Laravel `/up`; public document root container mengarah ke `public/`.
+- Laravel mempercayai forwarded headers dari Railway agar URL dan aset memakai HTTPS di balik proxy TLS.
 
 ## Persiapan project Railway
 
@@ -39,7 +40,7 @@ Panduan ini menjelaskan konfigurasi aplikasi dan langkah deploy menggunakan Dock
    ```
 
    Buat APP_KEY untuk pertama kali dengan `php artisan key:generate --show` pada lingkungan lokal tepercaya, lalu masukkan hasilnya hanya ke Variables Railway. Jangan commit, kirim ke chat, atau gunakan ulang key di lingkungan lain. Setelah tersimpan, jangan membuat ulang key pada setiap deploy karena itu membatalkan sesi terenkripsi.
-4. Di pengaturan service aplikasi, atur pre-deploy command menjadi `php artisan migrate --force`. Perintah ini hanya menjalankan migrasi; **jangan** menjalankan `migrate:fresh` atau `db:seed` otomatis saat container start.
+4. `railway.json` menjalankan `php artisan migrate --force` sebagai pre-deploy command pada setiap rilis. Perintah ini hanya menjalankan migrasi yang belum diterapkan; **jangan** menjalankan `migrate:fresh` atau `db:seed` otomatis saat container start.
 5. Generate public domain di Railway. Pastikan domain memakai HTTPS. Atur volume persisten pada service aplikasi ke `/var/www/html/storage/app/private` agar berkas privat tidak hilang saat container diganti. Volume Railway tidak otomatis dibagi dengan service lain.
 6. Deploy aplikasi. Health check harus mendapat respons sukses dari `/up`.
 
@@ -120,8 +121,11 @@ Hindari menaruh password produksi dalam shell history. Jalankan pengujian setela
 | Gejala | Pemeriksaan dan tindakan |
 |---|---|
 | Container gagal build pada Composer | Periksa log build, versi PHP pada Dockerfile, lockfile, dan ekstensi PHP. Jangan memakai `--ignore-platform-reqs`; itu menyembunyikan ketidakcocokan runtime. |
+| Apache crash dengan `More than one MPM loaded` | Pastikan deployment memakai commit terbaru; entrypoint memilih `mpm_prefork` saat container mulai dan gagal dengan pesan modul jika konfigurasi Apache masih bertentangan. |
 | Railway menampilkan 502 | Pastikan deployment aktif, `PORT` diteruskan ke Apache, konfigurasi health check `/up`, dan APP_KEY tersedia. Baca deploy log tanpa menyalakan `APP_DEBUG`. |
 | Error database saat pre-deploy | Periksa koneksi internal MySQL dan referensi Variables; jangan mengabaikan kegagalan `migrate --force`. |
+| HTTP 500 karena tabel `sessions` tidak ada | Pastikan migrasi MySQL telah berhasil. `railway.json` menjalankan `php artisan migrate --force` sebelum rilis; periksa pre-deploy log bila gagal. |
+| Tautan login/aset memakai HTTP di balik Railway | Pastikan aplikasi mempercayai forwarded headers proxy Railway dan `APP_URL` menunjuk domain HTTPS. Regression test forwarded HTTPS tersedia pada `tests/Feature/ExampleTest.php`. |
 | Request selain `/` menjadi 404 | Pastikan `mod_rewrite` aktif, `AllowOverride All` berlaku, dan DocumentRoot Apache adalah `/var/www/html/public`. |
 | Upload hilang setelah deploy | Pastikan volume persisten terpasang tepat di `/var/www/html/storage/app/private`. File container tanpa volume bersifat sementara. |
 | Notifikasi tertahan | Pastikan service worker aktif, konfigurasi `QUEUE_CONNECTION=database`, lalu periksa tabel jobs, failed jobs, dan deploy log worker. |
@@ -129,9 +133,12 @@ Hindari menaruh password produksi dalam shell history. Jalankan pengujian setela
 
 ## Bukti deployment yang perlu dilengkapi kelompok
 
-- Domain publik HTTPS: **belum tersedia pada workspace ini**.
-- Tanggal/waktu deployment dan spesifikasi/region Railway: **isi setelah deploy**.
-- Status tiga pemeriksaan file rahasia dan redirect HTTP: **isi dengan keluaran curl aktual**.
+- Domain publik HTTPS: https://kampuslms-kelompok-05-production.up.railway.app/ (diverifikasi 12 November 2026).
+- `/`, `/up`, dan `/login` merespons 200; `/dashboard` dan `/admin/users` tanpa login merespons 302.
+- `/.env`, `/composer.json`, dan `/storage/logs/laravel.log` merespons 404; HTTP diarahkan ke HTTPS dengan 301.
+- Header yang diverifikasi: `X-Content-Type-Options`, `X-Frame-Options`, dan `Referrer-Policy`.
 - Hasil test-authz terhadap server produksi: **belum dijalankan**.
-- Worker Railway dan bukti status: **isi dari deployment log/screenshot aktual**.
+- Worker Railway dan bukti status: **belum dikonfigurasi/diverifikasi**.
+- Volume persistent untuk berkas privat: **belum dikonfigurasi/diverifikasi**.
+- Akun demo production: **belum dibuat**.
 - Perangkat lain yang dipakai untuk pengujian serta masalah nyata dan penyelesaiannya: **isi setelah pengujian kelompok**.

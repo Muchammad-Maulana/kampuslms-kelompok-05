@@ -16,4 +16,14 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_forwarded_https_is_used_for_generated_urls(): void
+    {
+        $response = $this->get('/', [
+            'X-Forwarded-Host' => 'lms.example.test',
+            'X-Forwarded-Proto' => 'https',
+        ]);
+
+        $response->assertSee('https://lms.example.test/login');
+    }
 }

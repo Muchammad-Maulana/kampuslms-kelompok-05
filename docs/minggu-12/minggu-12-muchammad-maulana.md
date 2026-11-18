@@ -49,8 +49,8 @@ Kelompok memilih Railway sesuai arahan asisten dosen. Aplikasi menggunakan Docke
 - `APP_KEY` harus unik untuk deployment ini dan disimpan sebagai secret; jangan commit atau membagikannya.
 - `SESSION_SECURE_COOKIE=true`, `APP_DEBUG=false`, dan `APP_ENV=production`.
 - Pre-deploy command hanya menjalankan `php artisan migrate --force`; seeder tidak dijalankan otomatis setiap container start.
-- Queue worker dijalankan sebagai service Railway terpisah.
-- Volume persisten dipasang untuk `storage/app/private`; file submission dan materi tidak dipublikasikan sebagai URL statis.
+- Queue worker production perlu dijalankan sebagai service Railway terpisah; service ini belum dikonfigurasi.
+- Volume persisten perlu dipasang pada `storage/app/private`; volume ini belum dikonfigurasi, sehingga jangan mengandalkan persistensi unggahan melewati pergantian container.
 
 Langkah konfigurasi rinci dan variabel Railway ada di [panduan deployment](../deployment.md).
 
@@ -87,7 +87,7 @@ Tidak mengarahkan document root ke root repository dan tidak mematikan aturan pe
 4. Menambahkan [container entrypoint](../../scripts/container-entrypoint.sh) yang memvalidasi port, menyiapkan izin runtime, menjalankan Apache, atau menjalankan worker sebagai user non-root.
 5. Mengamankan seeder demo: password development tetap dapat menggunakan nilai lokal, tetapi produksi memerlukan tiga password unik berisi setidaknya 16 karakter melalui config environment.
 6. Memperbarui [skrip test otorisasi](../../scripts/test-authz.sh) supaya kredensial akun demo dapat diberikan melalui environment variable tanpa mengganti nilai password di source.
-7. Menambahkan [scripts/deploy.sh](../../scripts/deploy.sh) untuk host Linux/VPS tradisional. Railway memakai auto-deploy serta pre-deploy migration dari dashboard, bukan skrip maintenance VPS ini.
+7. Menambahkan [scripts/deploy.sh](../../scripts/deploy.sh) untuk host Linux/VPS tradisional. Railway memakai auto-deploy serta pre-deploy migration dari `railway.json`, bukan skrip maintenance VPS ini.
 8. Menuliskan langkah Railway, MySQL, akun demo, worker, volume, pemeriksaan keamanan, dan troubleshooting pada [docs/deployment.md](../deployment.md).
 
 ## Hal yang tidak boleh diotomatisasi
@@ -112,17 +112,40 @@ vite v7.3.6
 ✓ built in 15.93s
 ```
 
-Container image, migration MySQL, dan deployment Railway memerlukan Docker/Railway serta akses project dan tidak dapat dibuktikan dari workspace lokal ini. Statusnya harus dilengkapi setelah kelompok menghubungkan repository ke Railway.
+Deployment live sudah diverifikasi pada 12 November 2026. Migrasi production pernah dijalankan manual ketika log menunjukkan tabel `railway.sessions` belum tersedia; konfigurasi rilis berikutnya sekarang menjalankan `php artisan migrate --force` melalui pre-deploy command di `railway.json`.
 
 Daftar deliverable:
 
-- [ ] Aplikasi tersedia di domain publik dengan HTTPS dan tautan ditambahkan ke README.
-- [ ] Checklist keamanan produksi lulus dengan keluaran `curl` aktual.
+- [x] Aplikasi tersedia di domain publik dengan HTTPS dan tautan ditambahkan ke README.
+- [x] Pemeriksaan endpoint dan file sensitif dicatat dengan keluaran HTTP aktual.
 - [x] `deploy.sh` tersedia dengan maintenance, first-error-stop, migrasi, cache, queue restart, dan health check untuk host VPS.
-- [ ] Service worker aktif dan bukti statusnya disimpan.
-- [x] `docs/deployment.md` menjelaskan arsitektur, konfigurasi, redeploy, log, dan masalah umum; masalah nyata kelompok harus ditambahkan setelah deploy.
-- [ ] `scripts/test-authz.sh` lulus terhadap deployment staging/produksi yang aman.
+- [x] `docs/deployment.md` menjelaskan arsitektur, konfigurasi, redeploy, log, dan masalah aktual saat deploy.
+- [ ] Service worker aktif dan bukti statusnya disimpan; pembuatan service tambahan perlu persetujuan penggunaan resource Railway.
+- [ ] `scripts/test-authz.sh` lulus terhadap deployment staging/produksi yang aman; skrip ini membuat dan menghapus data, sehingga belum dijalankan pada production.
 - [ ] Akun demo produksi dibuat dengan password berbeda dan tidak memakai password contoh.
 - [ ] Aplikasi diuji dari perangkat anggota lain dan hasilnya dicatat.
+
+## Bukti pemeriksaan production — 12 November 2026
+
+Domain: [https://kampuslms-kelompok-05-production.up.railway.app/](https://kampuslms-kelompok-05-production.up.railway.app/)
+
+| Request | Hasil |
+|---|---:|
+| `GET /` | 200 |
+| `GET /up` | 200 |
+| `GET /login` | 200 |
+| `GET /dashboard` tanpa login | 302 ke login |
+| `GET /admin/users` tanpa login | 302 ke login |
+| `GET /.env` | 404 |
+| `GET /composer.json` | 404 |
+| `GET /storage/logs/laravel.log` | 404 |
+| HTTP ke `/` | 301 ke HTTPS |
+| Aset CSS dan JavaScript hasil build | 200 |
+
+Respons production memuat `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, dan `Referrer-Policy: strict-origin-when-cross-origin`. Pemeriksaan ini tidak membuktikan pengujian pada telepon anggota lain, pembuatan akun demo, atau status worker.
+
+### Masalah deployment yang ditemukan dan diperbaiki
+
+Deployment awal membalas 500 karena tabel `railway.sessions` belum tersedia. Migrasi MySQL dijalankan dengan `php artisan migrate --force` tanpa menghapus data. Setelahnya situs dapat dibuka, tetapi proxy TLS Railway belum dikenali sehingga tautan login dan aset terbentuk dengan HTTP. Aplikasi kini mempercayai forwarded headers dari Railway agar URL publik menggunakan HTTPS. Regression test untuk URL forwarded HTTPS lulus. Migrasi aman otomatis dikonfigurasi sebagai pre-deploy command agar migrasi berikutnya diterapkan sebelum rilis aktif.
 
 Untuk layanan Railway, proses build/redeploy menggunakan commit dari GitHub. Worker harus menjalankan `php artisan queue:work --sleep=3 --tries=3 --max-time=3600`; setelah deployment baru, periksa log service worker dan job yang tertunda/gagal.

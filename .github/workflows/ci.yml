@@ -26,6 +26,14 @@ jobs:
       - name: Copy .env
         run: cp .env.example .env
 
+      - name: Reject committed environment files
+        shell: bash
+        run: |
+          if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -Ev '(^|/)\.env\.example$'; then
+            echo "::error::Tracked environment files can contain secrets. Remove them from the repository."
+            exit 1
+          fi
+
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
