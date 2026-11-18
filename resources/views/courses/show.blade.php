@@ -1,5 +1,23 @@
 <x-layout title="Detail Mata Kuliah">
-    <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="text-sm font-semibold text-blue-600">DETAIL MATA KULIAH</p><h1 class="mt-2 text-3xl font-bold text-slate-900">{{ $course->name }}</h1><p class="mt-2 text-sm text-slate-500">{{ $course->code }} · {{ $course->sks }} SKS</p></div><div class="flex gap-2">@can('manageEnrollment', $course)<a href="{{ route($routePrefix . '.enrollment.edit', $course) }}" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white">Kelola mahasiswa</a>@endcan @can('update', $course)<a href="{{ route('admin.mata-kuliah.edit', $course) }}" class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white">Edit</a>@endcan<a href="{{ route($routePrefix . '.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Kembali</a></div></div>
+    <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+            <p class="text-sm font-semibold text-blue-600">DETAIL MATA KULIAH</p>
+            <h1 class="mt-2 text-3xl font-bold text-slate-900">{{ $course->name }}</h1>
+            <p class="mt-2 text-sm text-slate-500">{{ $course->code }} · {{ $course->sks }} SKS</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            @if (in_array(auth()->user()->role, ['mahasiswa', 'dosen'], true))
+                <a href="{{ route($routePrefix . '.leaderboard', $course) }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Papan peringkat</a>
+            @endif
+            @can('manageEnrollment', $course)
+                <a href="{{ route($routePrefix . '.enrollment.edit', $course) }}" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white">Kelola mahasiswa</a>
+            @endcan
+            @can('update', $course)
+                <a href="{{ route('admin.mata-kuliah.edit', $course) }}" class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white">Edit</a>
+            @endcan
+            <a href="{{ route($routePrefix . '.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Kembali</a>
+        </div>
+    </div>
     @if (session('success'))<div class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-700">{{ session('success') }}</div>@endif
     <div class="grid gap-6 md:grid-cols-2">
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

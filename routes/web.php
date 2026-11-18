@@ -4,6 +4,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseLeaderboardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\GradeReportController;
@@ -70,6 +71,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:dosen'])->prefix('dosen')->name('dosen.')->group(function () {
     Route::get('mata-kuliah/{course}/rekap-nilai', [GradeReportController::class, 'lecturerCourse'])
         ->name('mata-kuliah.grades');
+    Route::get('mata-kuliah/{course}/peringkat', [CourseLeaderboardController::class, 'show'])
+        ->name('mata-kuliah.leaderboard');
     Route::get('mata-kuliah/{course}', [CourseController::class, 'show'])->name('mata-kuliah.show');
     Route::get('mata-kuliah', [CourseController::class, 'index'])->name('mata-kuliah.index');
     Route::post('mata-kuliah/{course}/assignments/{assignment}/submissions/{submission}/grade', [SubmissionController::class, 'grade'])
@@ -100,6 +103,8 @@ Route::middleware(['auth', 'role:dosen'])->prefix('dosen')->name('dosen.')->grou
 Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
     Route::get('nilai', [GradeReportController::class, 'studentIndex'])->name('grades.index');
     Route::get('mata-kuliah', [CourseController::class, 'index'])->name('mata-kuliah.index');
+    Route::get('mata-kuliah/{course}/peringkat', [CourseLeaderboardController::class, 'show'])
+        ->name('mata-kuliah.leaderboard');
     Route::get('mata-kuliah/{course}', [CourseController::class, 'show'])->name('mata-kuliah.show');
     Route::post('mata-kuliah/{course}/assignments/{assignment}/submissions', [SubmissionController::class, 'store'])
         ->name('mata-kuliah.assignments.submissions.store');
