@@ -30,11 +30,11 @@ Lonceng notifikasi memperbarui jumlah yang belum dibaca setiap 30 detik. Halaman
 
 ## Anggota dan Pembagian Peran
 
-| Anggota | Peran/status pada Minggu 13 |
+| Anggota | Peran/status pada Minggu 1-13 |
 |---|---|
-| [Muchammad Maulana (10241043)](https://github.com/Muchammad-Maulana) | Anggota aktif A05; saat ini mengerjakan fitur papan peringkat dan lencana ketepatan waktu secara solo, serta tugas Minggu 13. |
-| [Linggar Pramudia (10241039)](https://github.com/Ling9ar) | Kontributor historis; tidak aktif pada pengerjaan Minggu 13. |
-| [Melodiva Rosananda (10241041)](https://github.com/melodivarosa) | Kontributor historis; tidak aktif pada pengerjaan Minggu 13. |
-| [Muhammad Daffa Naufarrel Putranada (10241045)](https://github.com/Azroef) | Kontributor historis; tidak aktif pada pengerjaan Minggu 13. |
+| [Muchammad Maulana (10241043)](https://github.com/Muchammad-Maulana) | Anggota aktif A05; saat ini mengerjakan fitur papan peringkat dan lencana ketepatan waktu secara solo, serta tugas Minggu 13.. |
+| [Linggar Pramudya (10241039)](https://github.com/Ling9ar) | Membuat factory dan seeder, tampilan/course UI, throttle/login, serta validasi dan konfirmasi delete. |
+| [Melodiva Rosananda (10241041)](https://github.com/melodivarosa) | Membuat route dan CRUD mata kuliah. |
+| [Muhammad Daffa Naufarrel Putranada (10241045)](https://github.com/Azroef) | Membuat CRUD pengguna dan mata kuliah, autentikasi/throttle, halaman 403, route model binding, policy, authorization, serta tabel titik rawan IDOR. |
 
-Sebagian commit lama memakai identitas bersama `Kelompok 5`, sehingga riwayat Git tidak cukup untuk membagi semua pekerjaan lama ke anggota tertentu. Jumlah commit juga bukan satu-satunya ukuran kontribusi.
+Sebagian commit lama memakai identitas bersama Kelompok 5, sehingga riwayat Git tidak cukup untuk membagi semua pekerjaan lama ke anggota tertentu. Jumlah commit juga bukan satu-satunya ukuran kontribusi..
