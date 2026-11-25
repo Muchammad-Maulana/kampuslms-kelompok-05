@@ -143,6 +143,58 @@ class WeekNineFileHandlingTest extends TestCase
         ]);
     }
 
+    public function test_student_assignment_list_shows_late_and_on_time_submissions_with_distinct_statuses(): void
+    {
+        [$student, $lecturer, $course, $lateAssignment] = $this->createAssignmentContext([
+            'due_at' => now()->subDays(2),
+            'allow_late' => true,
+        ]);
+        $onTimeAssignment = Assignment::create([
+            'course_id' => $course->id,
+            'created_by' => $lecturer->id,
+            'title' => 'Tugas tepat waktu',
+            'instructions' => 'Kirim sebelum tenggat.',
+            'due_at' => now()->subDays(3),
+            'max_score' => 100,
+            'allow_late' => true,
+            'status' => 'published',
+        ]);
+
+        Submission::create([
+            'assignment_id' => $lateAssignment->id,
+            'user_id' => $student->id,
+            'file_path' => 'submissions/late.pdf',
+            'original_name' => 'late.pdf',
+            'file_size' => 100,
+            'submitted_at' => now()->subDay(),
+            'is_late' => true,
+        ]);
+        Submission::create([
+            'assignment_id' => $onTimeAssignment->id,
+            'user_id' => $student->id,
+            'file_path' => 'submissions/on-time.pdf',
+            'original_name' => 'on-time.pdf',
+            'file_size' => 100,
+            'submitted_at' => $onTimeAssignment->due_at->copy()->subHour(),
+            'is_late' => false,
+        ]);
+
+        $this->actingAs($student)
+            ->get(route('mahasiswa.mata-kuliah.assignments.index', $course))
+            ->assertOk()
+            ->assertSee('Terlambat')
+            ->assertSee('Tepat waktu')
+            ->assertSee('bg-red-100 text-red-700')
+            ->assertSee('bg-emerald-100 text-emerald-700')
+            ->assertSee('data-assignment-filter="late"', false);
+
+        $this->actingAs($lecturer)
+            ->get(route('dosen.assignments.show', $lateAssignment))
+            ->assertOk()
+            ->assertSee('Terlambat dikumpulkan')
+            ->assertSee('bg-red-100 text-red-700');
+    }
+
     public function test_submission_rejects_invalid_file_types_and_files_over_five_megabytes(): void
     {
         Storage::fake('local');

@@ -47,7 +47,10 @@
                     <div class="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
                         <p class="font-semibold">File terkirim:</p>
                         <p class="mt-1">{{ $submission->original_name }}</p>
-                        <p class="mt-1 text-xs text-slate-500">{{ number_format($submission->file_size / 1048576, 2) }} MB · {{ $submission->is_late ? 'Terlambat' : 'Tepat waktu' }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ number_format($submission->file_size / 1048576, 2) }} MB</p>
+                        <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $submission->is_late ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }}">
+                            {{ $submission->is_late ? 'Terlambat dikumpulkan' : 'Dikumpulkan tepat waktu' }}
+                        </span>
                         <p class="mt-1 text-xs text-slate-500">Dikirim {{ $submission->submitted_at?->format('d M Y H:i') ?? 'belum tercatat' }}</p>
                         <a class="mt-3 inline-flex rounded-md bg-blue-700 px-3 py-2 text-xs font-semibold text-white" href="{{ route('mahasiswa.submissions.download', $submission) }}">Unduh pengumpulan saya</a>
                     </div>
@@ -103,6 +106,9 @@
                                 <p class="font-semibold text-slate-900">{{ $student->name }}</p>
                                 @if ($submission)
                                     <p class="text-sm text-slate-500">{{ $submission->original_name }} · {{ number_format($submission->file_size / 1048576, 2) }} MB · {{ $submission->submitted_at?->format('d M Y H:i') }}</p>
+                                    <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $submission->is_late ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }}">
+                                        {{ $submission->is_late ? 'Terlambat dikumpulkan' : 'Dikumpulkan tepat waktu' }}
+                                    </span>
                                 @else
                                     <p class="text-sm text-slate-500">Belum mengumpulkan</p>
                                 @endif
@@ -112,7 +118,7 @@
                             @elseif ($submission->grade)
                                 <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Nilai: {{ $submission->grade->score }}</span>
                             @else
-                                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ $submission->is_late ? 'Terlambat · Belum dinilai' : 'Belum dinilai' }}</span>
+                                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Belum dinilai</span>
                             @endif
                         </div>
 

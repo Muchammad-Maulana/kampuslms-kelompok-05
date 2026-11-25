@@ -17,11 +17,18 @@ class AssignmentController extends Controller
     {
         $this->authorize('viewAny', [Assignment::class, $course]);
 
-        $assignments = $course->assignments()
+        $assignmentQuery = $course->assignments()
             ->visibleTo($request->user())
-            ->with('creator')
-            ->latest()
-            ->paginate(15);
+            ->with(['creator', 'course'])
+            ->withCount('submissions');
+
+        if ($request->user()->role === 'mahasiswa') {
+            $assignmentQuery->with([
+                'submissions' => fn ($query) => $query->where('user_id', $request->user()->id),
+            ]);
+        }
+
+        $assignments = $assignmentQuery->latest()->paginate(15);
 
         return view('assignments.index', compact('course', 'assignments'));
     }
