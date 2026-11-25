@@ -35,6 +35,11 @@ RUN apt-get update \
     && a2enconf security-headers \
     && rm -rf /var/lib/apt/lists/*
 
+RUN printf '%s\n' \
+        'upload_max_filesize=6M' \
+        'post_max_size=8M' \
+        > /usr/local/etc/php/conf.d/uploads.ini
+
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf

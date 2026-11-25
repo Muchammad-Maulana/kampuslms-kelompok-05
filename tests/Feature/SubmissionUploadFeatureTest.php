@@ -42,7 +42,11 @@ class SubmissionUploadFeatureTest extends TestCase
                 'note' => 'Jawaban saya',
             ])
             ->assertRedirect(route('mahasiswa.mata-kuliah.assignments.scoped-show', ['course' => $course, 'assignment' => $assignment]))
-            ->assertSessionHas('success', 'Tugas berhasil dikirim.');
+            ->assertSessionHas('success', 'Tugas berhasil dikumpulkan.');
+
+        $this->get(route('mahasiswa.mata-kuliah.assignments.scoped-show', ['course' => $course, 'assignment' => $assignment]))
+            ->assertOk()
+            ->assertSee('Tugas berhasil dikumpulkan.');
 
         $submission = Submission::where('user_id', $student->id)->firstOrFail();
         $this->assertSame('jawaban.pdf', $submission->original_name);

@@ -153,7 +153,15 @@ class WeekNineFileHandlingTest extends TestCase
             ->post(route('mahasiswa.mata-kuliah.assignments.submissions.store', [$course, $assignment]), [
                 'file' => UploadedFile::fake()->create('script.pdf', 1, 'text/x-php'),
             ])
-            ->assertSessionHasErrors('file');
+            ->assertSessionHasErrors('file')
+            ->assertSessionHasErrors([
+                'file' => 'Format file harus PDF, DOC, atau DOCX.',
+            ]);
+
+        $this->get(route('mahasiswa.mata-kuliah.assignments.scoped-show', ['course' => $course, 'assignment' => $assignment]))
+            ->assertOk()
+            ->assertSee('Pengumpulan belum berhasil.')
+            ->assertSee('Format file harus PDF, DOC, atau DOCX.');
 
         $this->post(route('mahasiswa.mata-kuliah.assignments.submissions.store', [$course, $assignment]), [
             'file' => UploadedFile::fake()->create('large.pdf', 5121, 'application/pdf'),

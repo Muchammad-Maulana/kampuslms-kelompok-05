@@ -23,7 +23,7 @@ class SubmissionController extends Controller
         $validated = $request->validate([
             'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
             'note' => ['nullable', 'string', 'max:2000'],
-        ]);
+        ], $this->submissionValidationMessages());
 
         $existing = $assignment->submissions()->where('user_id', $request->user()->id)->first();
         $file = $validated['file'];
@@ -48,7 +48,7 @@ class SubmissionController extends Controller
         }
 
         return redirect()->route('mahasiswa.mata-kuliah.assignments.scoped-show', ['course' => $course, 'assignment' => $assignment])
-            ->with('success', 'Tugas berhasil dikirim.');
+            ->with('success', 'Tugas berhasil dikumpulkan.');
     }
 
     public function update(Request $request, Course $course, Assignment $assignment, Submission $submission): RedirectResponse
@@ -59,7 +59,7 @@ class SubmissionController extends Controller
         $validated = $request->validate([
             'file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
             'note' => ['nullable', 'string', 'max:2000'],
-        ]);
+        ], $this->submissionValidationMessages());
 
         if ($request->hasFile('file')) {
             $file = $validated['file'];
@@ -82,7 +82,7 @@ class SubmissionController extends Controller
         }
 
         return redirect()->route('mahasiswa.mata-kuliah.assignments.scoped-show', ['course' => $course, 'assignment' => $assignment])
-            ->with('success', 'Tugas berhasil diperbarui.');
+            ->with('success', 'Pengumpulan tugas berhasil diperbarui.');
     }
 
     public function download(Submission $submission): StreamedResponse
@@ -117,5 +117,18 @@ class SubmissionController extends Controller
 
         return redirect()->route(auth()->user()->role.'.mata-kuliah.assignments.scoped-show', ['course' => $course, 'assignment' => $assignment])
             ->with('success', 'Nilai tugas berhasil disimpan.');
+    }
+
+    private function submissionValidationMessages(): array
+    {
+        return [
+            'file.required' => 'Pilih file tugas terlebih dahulu.',
+            'file.uploaded' => 'File gagal diunggah. Pastikan ukurannya maksimal 5 MB, lalu coba lagi.',
+            'file.file' => 'File yang dipilih tidak valid.',
+            'file.mimes' => 'Format file harus PDF, DOC, atau DOCX.',
+            'file.max' => 'Ukuran file maksimal 5 MB.',
+            'note.string' => 'Catatan harus berupa teks.',
+            'note.max' => 'Catatan maksimal 2.000 karakter.',
+        ];
     }
 }

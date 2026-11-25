@@ -7,8 +7,26 @@
         <a href="{{ route(request()->routeIs('dosen.*') ? 'dosen.mata-kuliah.assignments.index' : (request()->routeIs('mahasiswa.*') ? 'mahasiswa.mata-kuliah.assignments.index' : 'admin.mata-kuliah.assignments.index'), $assignment->course) }}" class="text-sm font-semibold text-blue-700">Kembali ke tugas</a>
     </div>
 
-    @if (session('success'))
-        <div class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-700">{{ session('success') }}</div>
+    @if (session('success') || session('error') || $errors->any())
+        @php $hasSubmissionError = session('error') || $errors->any(); @endphp
+        <div
+            data-flash-message
+            role="{{ $hasSubmissionError ? 'alert' : 'status' }}"
+            aria-live="{{ $hasSubmissionError ? 'assertive' : 'polite' }}"
+            class="fixed right-4 top-4 z-[100] flex w-[calc(100%-2rem)] max-w-md items-start justify-between gap-4 rounded-xl border p-4 shadow-lg {{ $hasSubmissionError ? 'border-red-200 bg-red-50 text-red-800' : 'border-green-200 bg-green-50 text-green-800' }}"
+        >
+            <div class="text-sm">
+                <p class="font-semibold">{{ session('success') ?? session('error') ?? 'Pengumpulan belum berhasil.' }}</p>
+                @if ($errors->any())
+                    <ul class="mt-1 list-inside list-disc space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+            <button type="button" data-dismiss-flash aria-label="Tutup notifikasi" class="shrink-0 rounded px-2 font-semibold hover:bg-black/5">&times;</button>
+        </div>
     @endif
 
     <div class="max-w-3xl border-y border-slate-200 py-5">
@@ -62,7 +80,7 @@
                         @csrf
                         <div>
                             <label for="file" class="mb-1 block text-sm font-semibold text-slate-700">File jawaban</label>
-                            <input id="file" name="file" type="file" required class="block w-full rounded-lg border border-slate-300 text-sm text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white">
+                            <input id="file" name="file" type="file" accept=".pdf,.doc,.docx" required class="block w-full rounded-lg border border-slate-300 text-sm text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white">
                         </div>
                         <div>
                             <label for="note" class="mb-1 block text-sm font-semibold text-slate-700">Catatan</label>
