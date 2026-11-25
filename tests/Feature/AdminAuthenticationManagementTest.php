@@ -79,7 +79,7 @@ class AdminAuthenticationManagementTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->post('/logout')->assertRedirect('/');
+        $this->actingAs($user)->post('/logout')->assertRedirect('/login');
 
         $this->assertGuest();
     }

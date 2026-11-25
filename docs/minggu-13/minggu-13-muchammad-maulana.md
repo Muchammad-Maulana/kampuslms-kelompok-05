@@ -1,5 +1,7 @@
 # Minggu 13 — Kolaborasi, Version Control, dan Peer Review
 
+Panduan untuk memahami materi, menjelaskan pekerjaan, dan menyiapkan checkpoint ada di [Panduan Memahami dan Menjelaskan Minggu 13](panduan-pemahaman-minggu-13.md).
+
 ## Identitas dan kondisi kerja
 
 - **Nama:** Muchammad Maulana
@@ -10,7 +12,7 @@
 - **Repo peer review:** [SufSoup/kampuslms-a-kelompok-06](https://github.com/SufSoup/kampuslms-a-kelompok-06)
 - **PR yang tersedia:** [SufSoup/kampuslms-a-kelompok-06#56](https://github.com/SufSoup/kampuslms-a-kelompok-06/pull/56), sinkronisasi `dev` ke `main`, masih terbuka saat diperiksa. PR mencakup 87 file dan 45 commit, sehingga ruang lingkupnya besar.
 - **Status review:** Target sudah ditemukan. Temuan review belum ditulis atau dikirim; itu harus saya lakukan sendiri setelah membaca dan memahami kode.
-- **Dasar audit Git:** angka audit dihitung dari snapshot `origin/ci-milestone-m1` pada commit `4f6c566`, sebelum push Minggu 13. Sesudahnya, branch `ci-milestone-m1` dan remote sudah disinkronkan pada commit `d2184c2`.
+- **Dasar audit Git:** angka audit dihitung dari snapshot `origin/ci-milestone-m1` pada commit `4f6c566`, sebelum push Minggu 13. Fitur dan laporan awal Minggu 13 dipush pada `d2184c2`; pembaruan laporan terakhir dipush pada `0247929`.
 
 ## READ — Riwayat Git kelompok
 

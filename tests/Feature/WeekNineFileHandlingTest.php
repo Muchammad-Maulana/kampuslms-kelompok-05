@@ -101,6 +101,25 @@ class WeekNineFileHandlingTest extends TestCase
         $this->assertDatabaseMissing('submissions', ['assignment_id' => $assignment->id]);
     }
 
+    public function test_unenrolled_student_cannot_submit_assignment(): void
+    {
+        Storage::fake('local');
+
+        [, , $course, $assignment] = $this->createAssignmentContext();
+        $otherStudent = User::factory()->create(['role' => 'mahasiswa']);
+
+        $this->actingAs($otherStudent)
+            ->post(route('mahasiswa.mata-kuliah.assignments.submissions.store', [$course, $assignment]), [
+                'file' => UploadedFile::fake()->create('jawaban.pdf', 100, 'application/pdf'),
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('submissions', [
+            'assignment_id' => $assignment->id,
+            'user_id' => $otherStudent->id,
+        ]);
+    }
+
     public function test_late_status_is_computed_by_server(): void
     {
         Storage::fake('local');

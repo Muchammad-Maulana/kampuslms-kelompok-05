@@ -10,8 +10,8 @@
         @error('email')
             <div class="mt-5 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">{{ $message }}</div>
         @enderror
-
-        <form method="POST" action="{{ route('password.email') }}" class="mt-6 space-y-4">
+" 
+        <form method="POSTaction="{{ route('password.email') }}" class="mt-6 space-y-4">
             @csrf
             <div>
                 <label for="email" class="block text-sm font-semibold text-slate-700">Email</label>
