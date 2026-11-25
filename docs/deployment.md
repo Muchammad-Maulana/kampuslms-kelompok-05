@@ -56,6 +56,16 @@ php artisan db:seed --class=DemoAccountSeeder --force
 
 Seeder produksi akan gagal secara eksplisit bila tiga password rahasia belum dikonfigurasi dengan aman. Jangan jalankan seluruh `DatabaseSeeder` di produksi: seeder tersebut menambahkan data demonstrasi dan bukan bagian dari tiap deployment. Setelah akun dibuat, hapus password variabel dari Railway bila tidak perlu dirotasi lagi; simpan password akun hanya di secret manager kelompok.
 
+### Menambahkan konten contoh ke akun demo
+
+Setelah akun demo dosen dan mahasiswa tersedia, konten contoh dapat ditambahkan satu kali melalui shell service aplikasi:
+
+```bash
+php artisan db:seed --class=DemoCourseContentSeeder --force
+```
+
+Seeder ini idempotent dan hanya menambah tiga mata kuliah contoh, sembilan tugas, pengumpulan serta nilai untuk `dosen@kampuslms.test` dan `mahasiswa@kampuslms.test`. Seeder tidak membuat akun, mengubah password, menghapus data lama, atau berjalan otomatis saat deploy. Jika akun demo belum ada atau role-nya tidak sesuai, command gagal dengan pesan yang jelas. Pengumpulan contoh menyimpan berkas privat pada disk `local`; untuk mempertahankannya ketika container diganti, konfigurasi volume privat sesuai panduan di atas.
+
 ## Queue worker
 
 Tambahkan service Railway kedua dari repository dan image Dockerfile yang sama. Pada service worker, set start command:
